@@ -26,14 +26,16 @@ const userSchema = new Schema(
         role: {
             type: String,
             required: true,
-            enum: ["admin", "base_commander", "logistics_officer"],
+            enum: ["admin", "base_commander", "logistics_officer", "user"],
+            default: "user",
         },
         assignedBase: {
             type: Schema.Types.ObjectId,
             ref: "Base",
             required: function () {
-                return this.role !== "admin";
+                return this.role === "base_commander";
             },
+            default: null,
         },
         isActive: {
             type: Boolean,
@@ -89,6 +91,7 @@ export const roles = {
     ADMIN: "admin",
     BASE_COMMANDER: "base_commander",
     LOGISTICS_OFFICER: "logistics_officer",
+    USER: "user",
 };
 
 export const isAdmin = (user) => user.role === roles.ADMIN;

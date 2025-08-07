@@ -1,5 +1,5 @@
 import { json } from "express";
-import { User } from "../models/user.models.js";
+import { roles, User } from "../models/user.models.js";
 import { COOKIE_OPTIONS } from "../constants.js";
 
 export const registerUser = async (req, res) => {
@@ -101,6 +101,90 @@ export const registerCommander = async (req, res) => {
         return res.status(500).json({
             message: "Internal server error",
             status: "error",
+        });
+    }
+};
+
+export const makeCommander = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!userId) {
+            return res.status(400).json({
+                message: "User ID is required",
+                status: "error",
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: { role: roles.BASE_COMMANDER } },
+            {
+                new: true,
+                runValidators: true,
+                select: "-password -refreshToken",
+            }
+        );
+
+        if (!updatedUser) {
+            return res.json({
+                message: "user not found",
+                status: "error",
+            });
+        }
+
+        return res.json({
+            message: "role updated to commander successfully",
+            status: "success",
+            data: updatedUser,
+        });
+    } catch (error) {
+        return res.json({
+            message: "error occurred while makind user base commander",
+            status: "error",
+            error: error.message,
+        });
+    }
+};
+
+export const removeCommander = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!userId) {
+            return res.status(400).json({
+                message: "User ID is required",
+                status: "error",
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: { role: roles.USER } },
+            {
+                new: true,
+                runValidators: true,
+                select: "-password -refreshToken",
+            }
+        );
+
+        if (!updatedUser) {
+            return res.json({
+                message: "user not found",
+                status: "error",
+            });
+        }
+
+        return res.json({
+            message: "role changed from commander to user",
+            status: "success",
+            data: updatedUser,
+        });
+    } catch (error) {
+        return res.json({
+            message: "error occurred while makind user base commander",
+            status: "error",
+            error: error.message,
         });
     }
 };

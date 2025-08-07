@@ -3,6 +3,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
 import baseRouter from "./routes/base.routes.js";
+import equipmentRouter from "./routes/equipment.routes.js";
+import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 
 const app = express();
 
@@ -22,11 +24,15 @@ app.use("/api/v1/user/", userRouter);
 
 app.use("/api/v1/base/", baseRouter);
 
+app.use("/api/v1/equipment", equipmentRouter);
+
 app.get("/", (req, res) => {
     return res.status(200).json({
         message: "Welcome to MAMS API (Military Asset Management System)",
         status: "success",
     });
 });
+
+app.use(errorHandler);
 
 export default app;

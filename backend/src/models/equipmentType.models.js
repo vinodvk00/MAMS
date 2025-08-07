@@ -6,6 +6,7 @@ const equipmentTypeSchema = new Schema(
             type: String,
             required: true,
             unique: true,
+            trim: true,
         },
         category: {
             type: String,
@@ -17,6 +18,7 @@ const equipmentTypeSchema = new Schema(
             required: true,
             unique: true,
             uppercase: true,
+            trim: true,
         },
         description: String,
         isActive: {

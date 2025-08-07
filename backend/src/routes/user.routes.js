@@ -4,8 +4,10 @@ import {
     getUserById,
     loginUser,
     logoutUser,
+    makeCommander,
     registerCommander,
     registerUser,
+    removeCommander,
 } from "../controllers/user.controller.js";
 import { adminOnly, verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -18,5 +20,7 @@ userRouter.get("/logout", verifyJWT, logoutUser);
 userRouter.post("/register-commander", verifyJWT, adminOnly, registerCommander);
 userRouter.get("/", verifyJWT, adminOnly, getAllUsers);
 userRouter.get("/:id", verifyJWT, adminOnly, getUserById);
+userRouter.get("/make-commander/:userId", verifyJWT, adminOnly, makeCommander);
+userRouter.get("/remove-commander/:userId", verifyJWT, adminOnly, removeCommander)
 
 export default userRouter;

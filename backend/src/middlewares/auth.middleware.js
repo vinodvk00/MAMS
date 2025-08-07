@@ -13,10 +13,19 @@ export const verifyJWT = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        req.user = decoded;
 
-        console.log("JWT verified successfully:", req.user);
+        const user = await User.findById(decoded._id).select(
+            "-password -refreshToken"
+        );
+        if (!user) {
+            return res.status(403).json({
+                message: "User not found",
+                status: "error",
+            });
+        }
 
+        req.user = user;
+        
         next();
     } catch (error) {
         console.error("JWT verification failed:", error);
@@ -28,8 +37,7 @@ export const verifyJWT = async (req, res, next) => {
 };
 
 export const adminOnly = async (req, res, next) => {
-
-    console.log("Checking admin access for user:", req.user);
+    // console.log("Checking admin access for user:", req.user);
 
     const role = await User.findById(req.user._id).select("role");
 
@@ -51,7 +59,7 @@ export const baseComanderOnly = (req, res, next) => {
         });
     }
 
-    // can access the assigned base only 
+    // can access the assigned base only
     // TODO: check the assigned base
 
     next();
@@ -59,6 +67,7 @@ export const baseComanderOnly = (req, res, next) => {
 
 export const logisticsOfficerOnly = (req, res, next) => {
     if (req.user?.role !== "logistics_officer" && req.user?.role !== "admin") {
+        console.log(req.user.role);
         return res.status(403).json({
             message: "Access denied. Logistics Officers only.",
             status: "error",

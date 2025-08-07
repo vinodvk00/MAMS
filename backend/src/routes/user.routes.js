@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+    changeRole,
     getAllUsers,
     getUserById,
     loginUser,
@@ -21,6 +22,13 @@ userRouter.post("/register-commander", verifyJWT, adminOnly, registerCommander);
 userRouter.get("/", verifyJWT, adminOnly, getAllUsers);
 userRouter.get("/:id", verifyJWT, adminOnly, getUserById);
 userRouter.get("/make-commander/:userId", verifyJWT, adminOnly, makeCommander);
-userRouter.get("/remove-commander/:userId", verifyJWT, adminOnly, removeCommander)
+userRouter.get(
+    "/remove-commander/:userId",
+    verifyJWT,
+    adminOnly,
+    removeCommander
+);
+
+userRouter.patch("/change-role/:userId", verifyJWT, adminOnly, changeRole);
 
 export default userRouter;

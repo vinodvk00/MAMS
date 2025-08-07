@@ -1,6 +1,7 @@
 import { json } from "express";
 import { roles, User } from "../models/user.models.js";
 import { COOKIE_OPTIONS } from "../constants.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const registerUser = async (req, res) => {
     try {
@@ -188,6 +189,71 @@ export const removeCommander = async (req, res) => {
         });
     }
 };
+
+export const changeRole = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const { role } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({
+            message: "User ID is required",
+            status: "error",
+        });
+    }
+
+    if (!role) {
+        return res.status(400).json({
+            message: "Role is required",
+            status: "error",
+        });
+    }
+
+    const validRoles = Object.values(roles);
+    if (!validRoles.includes(role)) {
+        return res.status(400).json({
+            message: `Invalid role. Allowed roles: ${validRoles.join(", ")}`,
+            status: "error",
+        });
+    }
+
+    const existingUser = await User.findById(userId).select("role");
+    if (!existingUser) {
+        return res.status(404).json({
+            message: "User not found",
+            status: "error",
+        });
+    }
+
+    if (existingUser.role === role) {
+        return res.status(400).json({
+            message: `User already has the role: ${role}`,
+            status: "error",
+        });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $set: { role: role } },
+        {
+            new: true,
+            runValidators: true,
+            select: "-password -refreshToken",
+        }
+    );
+
+    if (!updatedUser) {
+        return res.status(500).json({
+            message: "Failed to update user role",
+            status: "error",
+        });
+    }
+
+    return res.status(200).json({
+        message: `Role updated from ${existingUser.role} to ${role} successfully`,
+        status: "success",
+        data: updatedUser,
+    });
+});
 
 export const getAllUsers = async (req, res) => {
     const users = await User.find().select("-password -refreshToken");

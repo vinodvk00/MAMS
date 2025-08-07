@@ -6,11 +6,31 @@ const purchaseSchema = new Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Base",
             required: true,
+            validate: {
+                validator: async function (baseId) {
+                    if (!this.isModified("base")) return true;
+
+                    const base = await mongoose.model("Base").findById(baseId);
+                    return !!base;
+                },
+                message: "Base not found",
+            },
         },
         equipmentType: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "EquipmentType",
             required: true,
+            validate: {
+                validator: async function (equipmentTypeId) {
+                    if (!this.isModified("equipmentType")) return true;
+
+                    const equipmentType = await mongoose
+                        .model("EquipmentType")
+                        .findById(equipmentTypeId);
+                    return !!equipmentType;
+                },
+                message: "Equipment type not found",
+            },
         },
         quantity: {
             type: Number,
@@ -24,7 +44,6 @@ const purchaseSchema = new Schema(
         },
         totalAmount: {
             type: Number,
-            required: true,
         },
         supplier: {
             name: String,
@@ -59,6 +78,15 @@ const purchaseSchema = new Schema(
         timestamps: true,
     }
 );
+
+purchaseSchema.pre("save", function (next) {
+    if (this.quantity && this.unitPrice) {
+        this.totalAmount = this.quantity * this.unitPrice;
+    }
+    next();
+});
+
+// NOTE: totalamount to be handled for other operations than save
 
 purchaseSchema.index({ base: 1, purchaseDate: -1 });
 purchaseSchema.index({ equipmentType: 1, purchaseDate: -1 });

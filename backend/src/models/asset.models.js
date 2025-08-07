@@ -48,6 +48,5 @@ const assetSchema = new Schema(
 );
 
 assetSchema.index({ equipmentType: 1, currentBase: 1, status: 1 });
-assetSchema.index({ serialNumber: 1 });
 
 export const Asset = mongoose.model("Asset", assetSchema);

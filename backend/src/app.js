@@ -5,6 +5,7 @@ import userRouter from "./routes/user.routes.js";
 import baseRouter from "./routes/base.routes.js";
 import equipmentRouter from "./routes/equipment.routes.js";
 import { errorHandler } from "./middlewares/errorHandler.middleware.js";
+import purchaseRouter from "./routes/purchase.routes.js";
 
 const app = express();
 
@@ -25,6 +26,8 @@ app.use("/api/v1/user/", userRouter);
 app.use("/api/v1/base/", baseRouter);
 
 app.use("/api/v1/equipment", equipmentRouter);
+
+app.use("/api/v1/purchase", purchaseRouter);
 
 app.get("/", (req, res) => {
     return res.status(200).json({

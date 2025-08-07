@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
+import baseRouter from "./routes/base.routes.js";
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 app.use("/api/v1/user/", userRouter);
+
+app.use("/api/v1/base/", baseRouter);
 
 app.get("/", (req, res) => {
     return res.status(200).json({

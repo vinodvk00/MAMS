@@ -53,6 +53,94 @@ export const registerUser = async (req, res) => {
     }
 };
 
+export const registerCommander = async (req, res) => {
+    try {
+        const { username, password, fullname, baseId } = req.body;
+        if (!username || !password || !fullname || !baseId) {
+            return res.status(400).json({
+                message:
+                    "username, password, fullname, baseId fields are required",
+                status: "error",
+            });
+        }
+
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({
+                message: "Username already exists",
+                status: "error",
+            });
+        }
+
+        const newCommander = await User.create({
+            username,
+            password,
+            fullname,
+            role: "base_commander",
+            assignedBase: baseId,
+        });
+
+        const createdCommander = await User.findById(newCommander._id).select(
+            "-password -refreshToken"
+        );
+
+        if (!createdCommander) {
+            return res.status(404).json({
+                message: "Commander not found after creation",
+                status: "error",
+            });
+        }
+
+        return res.status(201).json({
+            message: "Base Commander registered successfully",
+            status: "success",
+            user: createdCommander,
+        });
+    } catch (error) {
+        console.error("Error registering base commander:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            status: "error",
+        });
+    }
+};
+
+export const getAllUsers = async (req, res) => {
+    const users = await User.find().select("-password -refreshToken");
+
+    return res.status(200).json({
+        message: "Users retrieved successfully",
+        status: "success",
+        data: users,
+    });
+};
+
+export const getUserById = async (req, res) => {
+    const userId = req.user?._id;
+
+    if (!userId) {
+        return res.status(400).json({
+            message: "User ID is required",
+            status: "error",
+        });
+    }
+
+    const user = await User.findById(userId).select("-password -refreshToken");
+
+    if (!user) {
+        return res.status(404).json({
+            message: "User not found",
+            status: "error",
+        });
+    }
+
+    return res.status(200).json({
+        message: "User retrieved successfully",
+        status: "success",
+        data: user,
+    });
+};
+
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
         // console.log(`Generating tokens for user ID: ${userId}`);

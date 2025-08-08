@@ -7,6 +7,7 @@ import equipmentRouter from "./routes/equipment.routes.js";
 import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 import purchaseRouter from "./routes/purchase.routes.js";
 import assetRouter from "./routes/asset.routes.js";
+import transferRouter from "./routes/transfer.routes.js";
 
 const app = express();
 
@@ -31,6 +32,8 @@ app.use("/api/v1/equipment", equipmentRouter);
 app.use("/api/v1/purchase", purchaseRouter);
 
 app.use("/api/v1/asset/", assetRouter);
+
+app.use("/api/v1/transfer/", transferRouter);
 
 app.get("/", (req, res) => {
     return res.status(200).json({

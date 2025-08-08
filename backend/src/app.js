@@ -9,6 +9,7 @@ import purchaseRouter from "./routes/purchase.routes.js";
 import assetRouter from "./routes/asset.routes.js";
 import transferRouter from "./routes/transfer.routes.js";
 import assignmentRouter from "./routes/assignment.routes.js";
+import expenditureRouter from "./routes/expenditure.routes.js";
 
 const app = express();
 
@@ -37,6 +38,8 @@ app.use("/api/v1/asset/", assetRouter);
 app.use("/api/v1/transfer/", transferRouter);
 
 app.use("/api/v1/assignment/", assignmentRouter);
+
+app.use("/api/v1/expenditure/", expenditureRouter);
 
 app.get("/", (req, res) => {
     return res.status(200).json({

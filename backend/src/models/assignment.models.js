@@ -80,7 +80,7 @@ const assignmentSchema = new Schema(
         },
         status: {
             type: String,
-            enum: ["ACTIVE", "RETURNED", "LOST", "DAMAGED"],
+            enum: ["ACTIVE", "RETURNED", "LOST", "DAMAGED", "EXPENDED"],
             default: "ACTIVE",
         },
         assignedBy: {

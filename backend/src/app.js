@@ -8,6 +8,7 @@ import { errorHandler } from "./middlewares/errorHandler.middleware.js";
 import purchaseRouter from "./routes/purchase.routes.js";
 import assetRouter from "./routes/asset.routes.js";
 import transferRouter from "./routes/transfer.routes.js";
+import assignmentRouter from "./routes/assignment.routes.js";
 
 const app = express();
 
@@ -34,6 +35,8 @@ app.use("/api/v1/purchase", purchaseRouter);
 app.use("/api/v1/asset/", assetRouter);
 
 app.use("/api/v1/transfer/", transferRouter);
+
+app.use("/api/v1/assignment/", assignmentRouter);
 
 app.get("/", (req, res) => {
     return res.status(200).json({

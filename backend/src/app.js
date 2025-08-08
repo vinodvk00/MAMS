@@ -10,6 +10,12 @@ import assetRouter from "./routes/asset.routes.js";
 import transferRouter from "./routes/transfer.routes.js";
 import assignmentRouter from "./routes/assignment.routes.js";
 import expenditureRouter from "./routes/expenditure.routes.js";
+import dashboardRouter from "./routes/dashboard.routes.js";
+import {
+    swaggerSpec,
+    swaggerUi,
+    swaggerUiOptions,
+} from "./config/swagger.config.js";
 
 const app = express();
 
@@ -24,6 +30,17 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
+
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, swaggerUiOptions)
+);
+
+app.get("/api-docs.json", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.send(swaggerSpec);
+});
 
 app.use("/api/v1/user/", userRouter);
 
@@ -40,6 +57,8 @@ app.use("/api/v1/transfer/", transferRouter);
 app.use("/api/v1/assignment/", assignmentRouter);
 
 app.use("/api/v1/expenditure/", expenditureRouter);
+
+app.use("/api/v1/dashboard/", dashboardRouter);
 
 app.get("/", (req, res) => {
     return res.status(200).json({

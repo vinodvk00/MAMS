@@ -1,42 +1,25 @@
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 
-// Enhanced Swagger definition with simplified auth
 const swaggerDefinition = {
     openapi: "3.0.0",
     info: {
         title: "Military Asset Management System (MAMS) API",
         version: "1.0.0",
         description: `
-      # Military Asset Management System API
-      
-      A comprehensive API for managing military assets across multiple bases.
-      This system enables commanders and logistics personnel to track, transfer, 
-      assign and manage critical military assets including vehicles, weapons, and ammunition.
-      
-      ## Features
-      - 🔐 Simple username/password authentication with JWT tokens
-      - 📊 Real-time dashboard analytics with quarterly metrics
-      - 🚛 Inter-base asset transfers with approval workflows
-      - 👥 Personnel asset assignments and tracking
-      - 💰 Purchase and expenditure management
-      - 📈 Comprehensive asset inventory tracking
-      
-      ## Authentication
-      This API supports two authentication methods for your convenience:
-      
-      ### Option 1: Direct Username/Password (Recommended for testing)
-      1. Click the 🔒 **Authorize** button above
-      2. Select **basicAuth** and enter your username and password directly
-      3. Click **Authorize**
-      
-      ### Option 2: JWT Token Authentication
-      1. **Login**: Use \`POST /user/login\` with your username and password
-      2. **Get Token**: Copy the access token from the response
-      3. **Authorize**: Click the 🔒 **Authorize** button above and select **bearerAuth**
-      4. **Enter Token**: Paste the token in format: \`Bearer your_token_here\`
-      
-      Both methods will authenticate you for all protected endpoints.
+        # Military Asset Management System API
+        
+        ## 🔑 Authentication
+        
+        **Simple One-Click Authentication:**
+        1. Click the 🔒 **Authorize** button above
+        2. Enter your username and password
+        3. Click **Authorize** → **Validates immediately!**
+        4. ✅ Start testing protected endpoints
+        
+        That's it! No tokens to copy, no headers to set.
+        
+        **For applications:** Use the regular \`POST /user/login\` endpoint which returns cookies + JWT tokens.
       
       ### Example Login:
       \`\`\`json
@@ -71,6 +54,50 @@ const swaggerDefinition = {
             url: "https://example.com/license",
         },
     },
+    tags: [
+        {
+            name: "Authentication",
+            description:
+                "🔑 **START HERE** - User authentication and session management",
+        },
+        {
+            name: "Users",
+            description: "👥 User management operations (Admin only)",
+        },
+        {
+            name: "Bases",
+            description: "🏢 Military base management operations (Admin only)",
+        },
+        {
+            name: "Equipment Types",
+            description: "⚙️ Equipment type management operations (Admin only)",
+        },
+        {
+            name: "Assets",
+            description: "📦 Asset management operations",
+        },
+        {
+            name: "Purchases",
+            description:
+                "💰 Equipment purchase operations (Logistics Officer only)",
+        },
+        {
+            name: "Transfers",
+            description: "🚛 Inter-base asset transfer operations",
+        },
+        {
+            name: "Assignments",
+            description: "👤 Asset assignment operations",
+        },
+        {
+            name: "Expenditures",
+            description: "📉 Asset expenditure operations",
+        },
+        {
+            name: "Dashboard",
+            description: "📊 Dashboard and analytics operations",
+        },
+    ],
     servers: [
         {
             url: "http://localhost:3000/api/v1",
@@ -83,22 +110,23 @@ const swaggerDefinition = {
     ],
     components: {
         securitySchemes: {
-            bearerAuth: {
-                type: "http",
-                scheme: "bearer",
-                bearerFormat: "JWT",
+            oauth2: {
+                type: "oauth2",
+                flows: {
+                    password: {
+                        tokenUrl: "/api/v1/user/token",
+                        scopes: {
+                            read: "Read access to all resources",
+                            write: "Write access to all resources",
+                        },
+                    },
+                },
                 description:
-                    "Enter your JWT token in the format: Bearer &lt;token&gt;",
-            },
-            basicAuth: {
-                type: "http",
-                scheme: "basic",
-                description:
-                    "Enter your username and password for direct authentication",
+                    "🔑 **Recommended** - Enter username/password, validates immediately when you click Authorize",
             },
         },
+
         schemas: {
-            // Authentication schemas
             LoginRequest: {
                 type: "object",
                 required: ["username", "password"],
@@ -834,15 +862,11 @@ const swaggerDefinition = {
     },
     security: [
         {
-            basicAuth: [],
-        },
-        {
-            bearerAuth: [],
+            oauth2: ["read", "write"],
         },
     ],
 };
 
-// Options for the swagger docs
 const options = {
     definition: swaggerDefinition,
     apis: ["./src/routes/*.js", "./src/controllers/*.js", "./src/models/*.js"],
@@ -850,57 +874,16 @@ const options = {
 
 const swaggerSpec = swaggerJSDoc(options);
 
-// Enhanced Swagger UI options with auth
 const swaggerUiOptions = {
     explorer: true,
     swaggerOptions: {
         persistAuthorization: true, // Persist auth across browser sessions
         displayRequestDuration: true,
         docExpansion: "list",
-        filter: true,
         showExtensions: true,
         showCommonExtensions: true,
         tryItOutEnabled: true,
     },
-    customCss: `
-    .swagger-ui .topbar { 
-      background-color: #1a365d; 
-      border-bottom: 3px solid #2c5282;
-    }
-    .swagger-ui .topbar .download-url-wrapper .select-label { 
-      color: white; 
-    }
-    .swagger-ui .info .title { 
-      color: #1a365d; 
-      font-size: 2.5rem;
-      font-weight: bold;
-    }
-    .swagger-ui .info .description p {
-      color: #2d3748;
-      font-size: 1rem;
-      line-height: 1.6;
-    }
-    .swagger-ui .scheme-container {
-      background: #f7fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 20px 0;
-    }
-    .swagger-ui .auth-wrapper {
-      border: 2px solid #4299e1;
-      border-radius: 8px;
-      padding: 10px;
-      background: #ebf8ff;
-    }
-    .swagger-ui .authorization__btn {
-      background-color: #4299e1;
-      border-color: #3182ce;
-    }
-    .swagger-ui .authorization__btn:hover {
-      background-color: #3182ce;
-    }
-  `,
     customSiteTitle: "MAMS API Documentation",
     customfavIcon: "/favicon.ico",
 };

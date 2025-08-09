@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
     changeRole,
     getAllUsers,
+    getOAuth2Token,
     getUserById,
     loginUser,
     logoutUser,
@@ -13,6 +14,129 @@ import {
 import { adminOnly, verifyJWT } from "../middlewares/auth.middleware.js";
 
 const userRouter = Router();
+
+/**
+ * @swagger
+ * /user/token:
+ *   post:
+ *     summary: 🔗 OAuth2 Token Endpoint (For Swagger Authorization)
+ *     description: |
+ *       **This endpoint is specifically for Swagger UI's "Authorize" button.**
+ *
+ *       When you click "Authorize" and select "oauth2", Swagger automatically calls this endpoint
+ *       to validate your credentials and get an access token.
+ *
+ *       **For regular application login, use POST /user/login instead.**
+ *     tags: [1. 🔑 Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - grant_type
+ *               - username
+ *               - password
+ *             properties:
+ *               grant_type:
+ *                 type: string
+ *                 enum: [password]
+ *                 description: OAuth2 grant type (always "password" for this flow)
+ *                 example: password
+ *               username:
+ *                 type: string
+ *                 description: Your username
+ *                 example: "admin"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: Your password
+ *                 example: "yourpassword"
+ *           examples:
+ *             adminLogin:
+ *               summary: Admin login
+ *               value:
+ *                 grant_type: password
+ *                 username: admin
+ *                 password: yourpassword
+ *             commanderLogin:
+ *               summary: Base commander login
+ *               value:
+ *                 grant_type: password
+ *                 username: commander.smith
+ *                 password: yourpassword
+ *     responses:
+ *       200:
+ *         description: Authentication successful - Token issued
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 access_token:
+ *                   type: string
+ *                   description: JWT access token for API authentication
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 token_type:
+ *                   type: string
+ *                   example: "Bearer"
+ *                   description: Token type (always Bearer for JWT)
+ *                 expires_in:
+ *                   type: number
+ *                   example: 3600
+ *                   description: Token expiration time in seconds
+ *                 scope:
+ *                   type: string
+ *                   example: "read write"
+ *                   description: Token permissions
+ *                 user_info:
+ *                   type: object
+ *                   description: Basic user information
+ *                   properties:
+ *                     username:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     fullname:
+ *                       type: string
+ *             example:
+ *               access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *               token_type: "Bearer"
+ *               expires_in: 3600
+ *               scope: "read write"
+ *               user_info:
+ *                 username: "admin"
+ *                 role: "admin"
+ *                 fullname: "Administrator"
+ *       400:
+ *         description: Bad request - Invalid parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "invalid_request"
+ *                 error_description:
+ *                   type: string
+ *                   example: "Username and password are required"
+ *       401:
+ *         description: Authentication failed - Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "invalid_grant"
+ *                 error_description:
+ *                   type: string
+ *                   example: "Invalid username or password"
+ */
+userRouter.post("/token", getOAuth2Token);
 
 /**
  * @swagger

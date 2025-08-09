@@ -106,6 +106,80 @@ export const registerCommander = async (req, res) => {
     }
 };
 
+export const getOAuth2Token = async (req, res) => {
+    try {
+        const { grant_type, username, password } = req.body;
+
+        if (!grant_type || grant_type !== "password") {
+            return res.status(400).json({
+                error: "unsupported_grant_type",
+                error_description: "Only 'password' grant type is supported",
+            });
+        }
+
+        if (!username || !password) {
+            return res.status(400).json({
+                error: "invalid_request",
+                error_description: "Username and password are required",
+            });
+        }
+
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(401).json({
+                error: "invalid_grant",
+                error_description: "Invalid username or password",
+            });
+        }
+
+        if (!user.isActive) {
+            console.log("❌ OAuth2: User account deactivated:", username);
+            return res.status(401).json({
+                error: "invalid_grant",
+                error_description: "Account is deactivated",
+            });
+        }
+
+        const isPasswordCorrect = await user.isPasswordCorrect(password);
+        if (!isPasswordCorrect) {
+            console.log("❌ OAuth2: Invalid password for:", username);
+            return res.status(401).json({
+                error: "invalid_grant",
+                error_description: "Invalid username or password",
+            });
+        }
+
+        const { accessToken, refreshToken } =
+            await generateAccessAndRefreshTokens(user._id);
+
+        console.log(
+            "✅ OAuth2 token issued for:",
+            user.username,
+            "Role:",
+            user.role
+        );
+
+        return res.status(200).json({
+            access_token: accessToken,
+            token_type: "Bearer",
+            expires_in: 3600,
+            scope: "read write",
+            refresh_token: refreshToken,
+            user_info: {
+                username: user.username,
+                role: user.role,
+                fullname: user.fullname,
+                assignedBase: user.assignedBase?.toString() || null,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            error: "server_error",
+            message: "Internal server error occurred",
+        });
+    }
+};
+
 export const makeCommander = async (req, res) => {
     try {
         const { userId } = req.params;

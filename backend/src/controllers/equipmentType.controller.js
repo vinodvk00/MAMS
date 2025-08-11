@@ -26,7 +26,7 @@ export const createEquipmentType = asyncHandler(async (req, res) => {
 });
 
 export const updateEquipmentType = asyncHandler(async (req, res) => {
-    const { name, category, code, description } = req.body;
+    const { name, category, code, description, isActive } = req.body;
     const { id } = req.params;
 
     if (!id) {
@@ -50,6 +50,7 @@ export const updateEquipmentType = asyncHandler(async (req, res) => {
     if (category !== undefined) updateData.category = category;
     if (code !== undefined) updateData.code = code;
     if (description !== undefined) updateData.description = description;
+    if (isActive !== undefined) updateData.isActive = isActive;
 
     const updatedEquipment = await EquipmentType.findByIdAndUpdate(
         id,

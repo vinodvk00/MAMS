@@ -12,6 +12,7 @@ import Purchases from './pages/Purchases';
 import Transfers from './pages/Transfers';
 import Assignments from './pages/Assignments';
 import DashboardPage from './pages/Dashboard';
+import Equipments from './pages/Equipments';
 
 const AppContent = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -23,6 +24,7 @@ const AppContent = () => {
     purchases: <Purchases />,
     transfers: <Transfers />,
     assignments: <Assignments />,
+    equipments: <Equipments />,
   };
 
   if (!isAuthenticated) {

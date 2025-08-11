@@ -8,6 +8,7 @@ const api = axios.create({
     },
 });
 
+// todo: cookie creation and handling
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("token");

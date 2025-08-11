@@ -31,7 +31,7 @@ const { Content } = Layout;
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
-boardPage = () => {
+const DashboardPage = () => {
     const {
         metrics,
         netMovementBreakdown,

@@ -155,7 +155,7 @@ equipmentRouter.post("/create", verifyJWT, adminOnly, createEquipmentType);
 
 /**
  * @swagger
- * /equipment/update/{id}:
+ * /equipment/{id}:
  *   patch:
  *     summary: Update equipment type
  *     description: |
@@ -241,7 +241,7 @@ equipmentRouter.post("/create", verifyJWT, adminOnly, createEquipmentType);
  *               message: "Equipment type not found"
  *               status: "error"
  */
-equipmentRouter.patch("/update/:id", verifyJWT, adminOnly, updateEquipmentType);
+equipmentRouter.patch("/:id", verifyJWT, adminOnly, updateEquipmentType);
 
 /**
  * @swagger

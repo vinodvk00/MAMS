@@ -64,6 +64,12 @@ export const authAPI = {
 export const dashboardAPI = {
     getMetrics: (params) => api.get("/dashboard/metrics", { params }),
     getFilters: () => api.get("/dashboard/filters"),
+    getPurchasesDetail: (params) =>
+        api.get("/dashboard/purchases-detail", { params }),
+    getTransfersInDetail: (params) =>
+        api.get("/dashboard/transfers-in-detail", { params }),
+    getTransfersOutDetail: (params) =>
+        api.get("/dashboard/transfers-out-detail", { params }),
 };
 
 export const assetsAPI = {

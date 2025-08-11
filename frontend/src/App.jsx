@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import '@ant-design/v5-patch-for-react-19';
 import { ConfigProvider } from 'antd';
 import { antdTheme } from './theme/antdTheme';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -10,13 +11,14 @@ import Assets from './pages/Assets';
 import Purchases from './pages/Purchases';
 import Transfers from './pages/Transfers';
 import Assignments from './pages/Assignments';
+import DashboardPage from './pages/Dashboard';
 
 const AppContent = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const { isAuthenticated } = useAuth();
 
   const pages = {
-    dashboard: <Dashboard />,
+    dashboard: <DashboardPage />,
     assets: <Assets />,
     purchases: <Purchases />,
     transfers: <Transfers />,

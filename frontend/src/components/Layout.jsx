@@ -112,139 +112,119 @@ const Layout = ({ children, currentPage, onPageChange }) => {
                     top: 0,
                     zIndex: 100,
                     overflow: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column'
                 }}
             >
-                {/* Logo Section */}
-                <div style={{
-                    padding: collapsed ? '20px 8px' : '20px 16px',
-                    borderBottom: '1px solid #3a3a3a',
-                    background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 66, 0.05))',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '12px',
-                    minHeight: '80px'
-                }}>
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    {/* Logo Section */}
                     <div style={{
-                        width: collapsed ? '32px' : '40px',
-                        height: collapsed ? '32px' : '40px',
-                        background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
-                        borderRadius: '8px',
+                        padding: collapsed ? '20px 8px' : '20px 16px',
+                        borderBottom: '1px solid #3a3a3a',
+                        background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 66, 0.05))',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 2px 8px rgba(255, 107, 53, 0.3)',
-                        flexShrink: 0
+                        gap: '12px',
+                        minHeight: '60px'
                     }}>
-                        <SafetyOutlined style={{
-                            fontSize: collapsed ? '18px' : '22px',
-                            color: '#fff'
-                        }} />
-                    </div>
-                    {!collapsed && (
-                        <div style={{ minWidth: 0 }}>
-                            <div style={{
-                                color: '#ff6b35',
-                                fontSize: '18px',
-                                fontWeight: '700',
-                                letterSpacing: '1px',
-                                lineHeight: '1',
-                                whiteSpace: 'nowrap'
-                            }}>
-                                MAMS
-                            </div>
-                            <div style={{
-                                color: '#6a6a6a',
-                                fontSize: '10px',
-                                letterSpacing: '0.5px',
-                                marginTop: '4px',
-                                whiteSpace: 'nowrap'
-                            }}>
-                                ASSET MANAGEMENT
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Menu Container */}
-                <div style={{
-                    flex: 1,
-                }}>
-                    <Menu
-                        theme="dark"
-                        mode="inline"
-                        selectedKeys={[currentPage]}
-                        items={menuItems}
-                        onClick={({ key }) => onPageChange(key)}
-                        style={{
-                            marginTop: '8px',
-                            background: 'transparent',
-                            borderRight: 'none'
-                        }}
-                    />
-                </div>
-
-                {/* Collapse Button - Fixed at bottom */}
-                <div style={{
-                    borderTop: '1px solid #3a3a3a',
-                    padding: '12px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    background: '#0f0f0f'
-                }}>
-                    <Button
-                        type="text"
-                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                        onClick={() => setCollapsed(!collapsed)}
-                        style={{
-                            fontSize: '16px',
-                            width: collapsed ? '48px' : '100%',
-                            height: '36px',
-                            color: '#b0b0b0',
+                        <div style={{
+                            width: collapsed ? '32px' : '40px',
+                            height: collapsed ? '32px' : '40px',
+                            background: 'linear-gradient(135deg, #ff6b35, #ff8c42)',
+                            borderRadius: '8px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: '#1a1a1a',
-                            border: '1px solid #3a3a3a',
-                            borderRadius: '6px',
-                            transition: 'all 0.3s'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = '#ff6b35';
-                            e.currentTarget.style.color = '#ff6b35';
-                            e.currentTarget.style.background = '#242424';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = '#3a3a3a';
-                            e.currentTarget.style.color = '#b0b0b0';
-                            e.currentTarget.style.background = '#1a1a1a';
-                        }}
-                    >
-                        {!collapsed && <span style={{ marginLeft: '8px' }}>Collapse Menu</span>}
-                    </Button>
-                </div>
-
-                {/* Footer Info - Above collapse button */}
-                {!collapsed && (
-                    <div style={{
-                        padding: '12px 16px',
-                        background: 'rgba(255, 107, 53, 0.05)',
-                        borderTop: '1px solid rgba(255, 107, 53, 0.2)',
-                        borderBottom: '1px solid rgba(255, 107, 53, 0.2)'
-                    }}>
-                        <div style={{
-                            color: '#6a6a6a',
-                            fontSize: '10px',
-                            textAlign: 'center',
-                            letterSpacing: '0.5px'
+                            boxShadow: '0 2px 8px rgba(255, 107, 53, 0.3)',
+                            flexShrink: 0
                         }}>
-                            MIL-STD COMPLIANT<br />
-                            v1.0.0
+                            <SafetyOutlined style={{
+                                fontSize: collapsed ? '18px' : '22px',
+                                color: '#fff'
+                            }} />
                         </div>
+                        {!collapsed && (
+                            <div style={{ minWidth: 0 }}>
+                                <div style={{
+                                    color: '#ff6b35',
+                                    fontSize: '18px',
+                                    fontWeight: '700',
+                                    letterSpacing: '1px',
+                                    lineHeight: '1',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    MAMS
+                                </div>
+                                <div style={{
+                                    color: '#6a6a6a',
+                                    fontSize: '10px',
+                                    letterSpacing: '0.5px',
+                                    marginTop: '4px',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    ASSET MANAGEMENT
+                                </div>
+                            </div>
+                        )}
                     </div>
-                )}
+                    <div style={{ flexGrow: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+                        {/* Menu Container */}
+
+                        <Menu
+                            theme="dark"
+                            mode="inline"
+                            selectedKeys={[currentPage]}
+                            items={menuItems}
+                            onClick={({ key }) => onPageChange(key)}
+                            style={{
+                                marginTop: '8px',
+                                background: 'transparent',
+                                borderRight: 'none'
+                            }}
+                        />
+                    </div>
+
+                    {/* Collapse Button - Fixed at bottom */}
+                    <div style={{
+                        borderTop: '1px solid #3a3a3a',
+                        padding: '12px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        background: '#0f0f0f'
+                    }}>
+                        <Button
+                            type="text"
+                            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                            onClick={() => setCollapsed(!collapsed)}
+                            style={{
+                                fontSize: '16px',
+                                width: collapsed ? '48px' : '100%',
+                                height: '36px',
+                                color: '#b0b0b0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: '#1a1a1a',
+                                border: '1px solid #3a3a3a',
+                                borderRadius: '6px',
+                                transition: 'all 0.3s'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = '#ff6b35';
+                                e.currentTarget.style.color = '#ff6b35';
+                                e.currentTarget.style.background = '#242424';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = '#3a3a3a';
+                                e.currentTarget.style.color = '#b0b0b0';
+                                e.currentTarget.style.background = '#1a1a1a';
+                            }}
+                        >
+                            {!collapsed && <span style={{ marginLeft: '8px' }}>Collapse Menu</span>}
+                        </Button>
+                    </div>
+
+
+                </div>
             </Sider>
 
             <AntLayout style={{
@@ -392,7 +372,7 @@ const Layout = ({ children, currentPage, onPageChange }) => {
                 <Content style={{
                     margin: '24px',
                     background: 'transparent',
-                    minHeight: 'calc(100vh - 112px)', 
+                    minHeight: 'calc(100vh - 112px)',
                     overflow: 'auto'
                 }}>
                     {children}

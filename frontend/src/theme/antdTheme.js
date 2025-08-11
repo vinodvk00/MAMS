@@ -19,7 +19,7 @@ export const antdTheme = {
         colorTextQuaternary: "#6a6a6a",
 
         // Background colors
-        colorBgContainer: "#242424",
+        // colorBgContainer: "#242424",
         colorBgElevated: "#2a2a2a",
         colorBgLayout: "#1a1a1a",
         colorBgSpotlight: "#3a3a3a",
@@ -164,8 +164,8 @@ export const antdTheme = {
         },
         Modal: {
             contentBg: "#242424",
-            headerBg: "#1a1a1a",
-            footerBg: "#1a1a1a",
+            headerBg: "transparent",
+            // footerBg: "#1a1a1a",
             titleColor: "#ff6b35",
             titleFontSize: 18,
         },

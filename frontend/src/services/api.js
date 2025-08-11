@@ -28,21 +28,29 @@ api.interceptors.response.use(
     (error) => {
         console.error("API Error:", error);
 
-        if (error.response?.data) {
-            const backendError = error.response.data;
-            // Return the backend error message directly
-            return Promise.reject(backendError);
+        if (
+            error.response?.status === 403 &&
+            error.response?.data?.message === "Invalid or expired access token"
+        ) {
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+
+            return Promise.reject({
+                message: "Invalid or expired token. Redirecting to login.",
+            });
         }
 
+        if (error.response?.data) {
+            return Promise.reject(error.response.data);
+        }
         if (error.code === "ERR_NETWORK" || !error.response) {
             return Promise.reject({
                 message: "Cannot connect to backend server",
             });
         }
 
-        // Default error
         return Promise.reject({
-            message: error.message || "Unknown error occurred",
+            message: error.message || "An unknown error occurred",
         });
     }
 );
@@ -67,12 +75,32 @@ export const assetsAPI = {
     getByBase: () => api.get("/asset/base"),
 };
 
+export const equipmentTypesAPI = {
+    getAll: () => api.get("/equipment/getAll"),
+    getById: (id) => api.get(`/equipment/${id}`),
+    create: (data) => api.post("/equipment/create", data),
+    update: (id, data) => api.patch(`/equipment/${id}`, data),
+    delete: (id) => api.delete(`/equipment/${id}`),
+};
+
+export const basesAPI = {
+    getAll: () => api.get("/base/"),
+    getById: (id) => api.get(`/base/${id}`),
+    create: (data) => api.post("/base/create", data),
+    update: (id, data) => api.patch(`/base/${id}`, data),
+    delete: (id) => api.delete(`/base/${id}`),
+};
+
 export const purchasesAPI = {
     getAll: () => api.get("/purchase/"),
     getById: (id) => api.get(`/purchase/${id}`),
     create: (data) => api.post("/purchase/create", data),
     update: (id, data) => api.patch(`/purchase/update/${id}`, data),
     delete: (id) => api.delete(`/purchase/${id}`),
+};
+
+export const baseAPI = {
+    getAll: () => api.get("/base"),
 };
 
 export const transfersAPI = {
@@ -89,6 +117,10 @@ export const assignmentsAPI = {
     getById: (id) => api.get(`/assignment/${id}`),
     create: (data) => api.post("/assignment/create", data),
     return: (id, data) => api.patch(`/assignment/return/${id}`, data),
+};
+
+export const userAPI = {
+    getAll: () => api.get("/user"),
 };
 
 export default api;

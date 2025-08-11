@@ -8,8 +8,6 @@ const purchaseSchema = new Schema(
             required: true,
             validate: {
                 validator: async function (baseId) {
-                    if (!this.isModified("base")) return true;
-
                     const base = await mongoose.model("Base").findById(baseId);
                     return !!base;
                 },
@@ -22,8 +20,6 @@ const purchaseSchema = new Schema(
             required: true,
             validate: {
                 validator: async function (equipmentTypeId) {
-                    if (!this.isModified("equipmentType")) return true;
-
                     const equipmentType = await mongoose
                         .model("EquipmentType")
                         .findById(equipmentTypeId);
@@ -80,7 +76,7 @@ const purchaseSchema = new Schema(
 );
 
 purchaseSchema.pre("save", function (next) {
-    if (this.quantity && this.unitPrice) {
+    if (this.isModified("quantity") || this.isModified("unitPrice")) {
         this.totalAmount = this.quantity * this.unitPrice;
     }
     next();

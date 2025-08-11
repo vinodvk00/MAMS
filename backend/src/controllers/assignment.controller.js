@@ -42,22 +42,23 @@ export const createAssignment = asyncHandler(async (req, res) => {
         });
     }
 
-    if (
-        asset.currentBase._id.toString() !==
-        assignedUser.assignedBase?.toString()
-    ) {
-        return res.status(400).json({
-            message: "User and asset must be from the same base",
-            status: "error",
-        });
-    }
-
-    const commanderBaseId = req.user.assignedBase?.toString();
-    if (asset.currentBase._id.toString() !== commanderBaseId) {
-        return res.status(403).json({
-            message: "You can only assign assets from your assigned base",
-            status: "error",
-        });
+    if (req.user.role !== "admin") {
+        if (
+            asset.currentBase._id.toString() !==
+            assignedUser.assignedBase?.toString()
+        ) {
+            return res.status(400).json({
+                message: "User and asset must be from the same base",
+                status: "error",
+            });
+        }
+        const commanderBaseId = req.user.assignedBase?.toString();
+        if (asset.currentBase._id.toString() !== commanderBaseId) {
+            return res.status(403).json({
+                message: "You can only assign assets from your assigned base",
+                status: "error",
+            });
+        }
     }
 
     const existingActiveAssignment = await Assignment.findOne({
@@ -443,7 +444,6 @@ export const deleteAssignment = asyncHandler(async (req, res) => {
         },
     });
 });
-
 
 // NOTE: thinking of updating asset status instead of the assignment
 

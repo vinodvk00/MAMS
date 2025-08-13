@@ -128,6 +128,10 @@ export const assignmentsAPI = {
 
 export const userAPI = {
     getAll: () => api.get("/user"),
+    create: (data) => api.post("/user/register", data),
+    update: (id, data) => api.patch(`/user/${id}`, data),
+    delete: (id) => api.delete(`/user/${id}`),
+    changeRole: (id, role) => api.patch(`/user/change-role/${id}`, { role }),
 };
 
 export default api;

@@ -13,6 +13,8 @@ import Transfers from './pages/Transfers';
 import Assignments from './pages/Assignments';
 import DashboardPage from './pages/Dashboard';
 import Equipments from './pages/Equipments';
+import Bases from './pages/Bases';
+import Users from './pages/Users';
 
 const AppContent = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -25,6 +27,8 @@ const AppContent = () => {
     transfers: <Transfers />,
     assignments: <Assignments />,
     equipments: <Equipments />,
+    bases: <Bases />,
+    users: <Users />,
   };
 
   if (!isAuthenticated) {

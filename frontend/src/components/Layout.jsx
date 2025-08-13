@@ -10,7 +10,7 @@ import {
     MenuUnfoldOutlined,
     SafetyOutlined,
     TeamOutlined,
-    ToolOutlined
+    ToolOutlined,
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -47,11 +47,20 @@ const Layout = ({ children, currentPage, onPageChange }) => {
             icon: <TeamOutlined />,
             label: 'Assignments',
         },
-        {   
+        {
             key: 'equipments',
             icon: <ToolOutlined />,
             label: 'Equipments',
+        }, {
+            key: 'bases',
+            icon: <SafetyOutlined />,
+            label: "Bases",
         },
+        {
+            key: 'users',
+            icon: <UserOutlined />,
+            label: 'Users',
+        }
     ];
 
     const userMenuItems = [

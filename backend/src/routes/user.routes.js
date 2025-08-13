@@ -10,6 +10,7 @@ import {
     registerCommander,
     registerUser,
     removeCommander,
+    updateUser
 } from "../controllers/user.controller.js";
 import { adminOnly, verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -391,6 +392,85 @@ userRouter.post("/login", loginUser);
  *         description: Internal server error
  */
 userRouter.get("/logout", verifyJWT, logoutUser);
+
+/**
+ * @swagger
+ * /user/{userId}:
+ *   patch:
+ *     summary: Update a user's details
+ *     description: |
+ *       Updates an existing user's information.
+ *       **Required Role:** Admin only.
+ *
+ *       - If `username` is changed, it must be unique.
+ *       - If `role` is not `"base_commander"`, `assignedBase` will be cleared automatically.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: objectId
+ *         description: The ID of the user to update
+ *         example: "507f1f77bcf86cd799439017"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullname:
+ *                 type: string
+ *                 example: "John Updated Doe"
+ *               username:
+ *                 type: string
+ *                 example: "john.updated"
+ *               isActive:
+ *                 type: boolean
+ *                 example: true
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "newSecurePass123"
+ *               assignedBase:
+ *                 type: string
+ *                 format: objectId
+ *                 example: "507f1f77bcf86cd799439011"
+ *               role:
+ *                 type: string
+ *                 enum: [admin, base_commander, logistics_officer, user]
+ *                 example: "logistics_officer"
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User updated successfully"
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input or duplicate username
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+userRouter.patch("/:userId", verifyJWT, adminOnly, updateUser);
 
 /**
  * @swagger

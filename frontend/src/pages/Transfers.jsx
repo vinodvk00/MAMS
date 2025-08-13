@@ -7,7 +7,7 @@ import {
     CloseCircleOutlined,
     SyncOutlined,
 } from '@ant-design/icons';
-import { transfersAPI, baseAPI, equipmentTypesAPI } from '../services/api';
+import { transfersAPI, basesAPI, equipmentTypesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import TransferForm from '../components/transfer/TransferForm';
 
@@ -32,7 +32,7 @@ const TransfersContent = () => {
         try {
             const [transfersRes, basesRes, equipmentTypesRes] = await Promise.all([
                 transfersAPI.getAll(),
-                baseAPI.getAll(),
+                basesAPI.getAll(),
                 equipmentTypesAPI.getAll(),
             ]);
             setTransfers(transfersRes.data);

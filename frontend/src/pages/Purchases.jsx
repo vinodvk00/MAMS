@@ -14,7 +14,7 @@ import {
     DeleteOutlined,
     EyeOutlined,
 } from "@ant-design/icons";
-import { purchasesAPI, baseAPI, equipmentTypesAPI } from "../services/api";
+import { purchasesAPI, basesAPI, equipmentTypesAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import PurchaseForm from "../components/purchases/PurchaseForm";
 import dayjs from "dayjs";
@@ -50,7 +50,7 @@ const PurchasesContent = () => {
     const fetchDropdownData = async () => {
         try {
             const [basesRes, equipmentTypesRes] = await Promise.all([
-                baseAPI.getAll(),
+                basesAPI.getAll(),
                 equipmentTypesAPI.getAll(),
             ]);
             setBases(basesRes.data);

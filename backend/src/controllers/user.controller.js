@@ -2,10 +2,11 @@ import { json } from "express";
 import { roles, User } from "../models/user.models.js";
 import { COOKIE_OPTIONS } from "../constants.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import mongoose from "mongoose";
 
 export const registerUser = async (req, res) => {
     try {
-        const { username, password, fullname } = req.body;
+        const { username, password, fullname, role, assignedBase } = req.body;
 
         if (!username || !password || !fullname) {
             return res.status(400).json({
@@ -26,7 +27,8 @@ export const registerUser = async (req, res) => {
             username,
             password,
             fullname,
-            role: "user", // Default role for new users
+            role: role || "user",
+            assignedBase: role === "base_commander" ? assignedBase : null,
         });
 
         const createdUser = await User.findById(newUser._id).select(
@@ -43,7 +45,7 @@ export const registerUser = async (req, res) => {
         return res.status(201).json({
             message: "User registered successfully",
             status: "success",
-            user: createdUser,
+            data: createdUser,
         });
     } catch (error) {
         console.error("Error registering user:", error);
@@ -53,6 +55,79 @@ export const registerUser = async (req, res) => {
         });
     }
 };
+
+export const updateUser = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const { fullname, username, isActive, password, assignedBase, role } =
+        req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res
+            .status(400)
+            .json({ message: "Invalid user ID", status: "error" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res
+            .status(404)
+            .json({ message: "User not found", status: "error" });
+    }
+
+    if (username && username !== user.username) {
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res
+                .status(400)
+                .json({ message: "Username already exists", status: "error" });
+        }
+        user.username = username;
+    }
+
+    if (fullname) user.fullname = fullname;
+    if (isActive !== undefined) user.isActive = isActive;
+    if (password) user.password = password; // pre-save hook will hash it
+    if (role) user.role = role;
+    if (assignedBase) user.assignedBase = assignedBase;
+    if (role !== "base_commander") {
+        user.assignedBase = null;
+    }
+
+    const updatedUser = await user.save();
+    const userToReturn = updatedUser.toObject();
+    delete userToReturn.password;
+    delete userToReturn.refreshToken;
+
+    res.status(200).json({
+        message: "User updated successfully",
+        status: "success",
+        data: userToReturn,
+    });
+});
+
+export const deleteUser = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res
+            .status(400)
+            .json({ message: "Invalid user ID", status: "error" });
+    }
+
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+        return res
+            .status(404)
+            .json({ message: "User not found", status: "error" });
+    }
+
+    res.status(200).json({
+        message: "User deleted successfully",
+        status: "success",
+        data: { deletedId: userId },
+    });
+});
 
 export const registerCommander = async (req, res) => {
     try {
@@ -330,7 +405,9 @@ export const changeRole = asyncHandler(async (req, res) => {
 });
 
 export const getAllUsers = async (req, res) => {
-    const users = await User.find().select("-password -refreshToken");
+    const users = await User.find()
+        .select("-password -refreshToken")
+        .populate("assignedBase", "name");
 
     return res.status(200).json({
         message: "Users retrieved successfully",

@@ -132,6 +132,13 @@ const Users = () => {
             ),
         },
         {
+            title: 'Date Added',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (date) => new Date(date).toLocaleDateString(),
+            sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+        },
+        {
             title: 'Actions',
             key: 'actions',
             align: 'center',

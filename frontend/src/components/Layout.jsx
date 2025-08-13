@@ -14,12 +14,17 @@ import {
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const { Header, Sider, Content } = AntLayout;
 
-const Layout = ({ children, currentPage, onPageChange }) => {
+const Layout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const currentPage = location.pathname.substring(1) || 'dashboard';
 
     const menuItems = [
         {
@@ -189,7 +194,7 @@ const Layout = ({ children, currentPage, onPageChange }) => {
                             mode="inline"
                             selectedKeys={[currentPage]}
                             items={menuItems}
-                            onClick={({ key }) => onPageChange(key)}
+                            onClick={({ key }) => navigate(`/${key}`)}
                             style={{
                                 marginTop: '8px',
                                 background: 'transparent',

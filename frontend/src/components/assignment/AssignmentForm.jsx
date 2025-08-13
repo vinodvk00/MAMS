@@ -32,6 +32,9 @@ const AssignmentForm = ({ form, assets, users }) => {
                     ))}
                 </Select>
             </Form.Item>
+            <Form.Item name="assignmentDate" label="Assignment Date">
+                <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
             <Form.Item name="expectedReturnDate" label="Expected Return Date">
                 <DatePicker style={{ width: '100%' }} />
             </Form.Item>

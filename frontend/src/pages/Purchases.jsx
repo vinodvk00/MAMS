@@ -146,6 +146,11 @@ const PurchasesContent = () => {
 
     const columns = [
         {
+            title: "ID",
+            dataIndex: "_id",
+            key: "_id",
+        },
+        {
             title: "Equipment Type",
             dataIndex: "equipmentType",
             key: "equipmentType",

@@ -5,7 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
 
 export const createAssignment = asyncHandler(async (req, res) => {
-    const { assetId, assignedToUserId, expectedReturnDate, purpose, notes } =
+    const { assetId, assignedToUserId, expectedReturnDate, purpose, notes, assignmentDate } =
         req.body;
 
     if (!assetId || !assignedToUserId) {
@@ -93,6 +93,7 @@ export const createAssignment = asyncHandler(async (req, res) => {
         purpose,
         notes,
         assignedBy: req.user._id,
+        assignmentDate,
     });
 
     await Asset.findByIdAndUpdate(assetId, { status: "ASSIGNED" });
@@ -319,6 +320,8 @@ export const returnAsset = asyncHandler(async (req, res) => {
     });
 });
 
+// NOTE: function is there, but not using in frontend
+// ASSUME: update and delete is not allowed (for now)
 export const updateAssignment = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { expectedReturnDate, purpose, notes } = req.body;

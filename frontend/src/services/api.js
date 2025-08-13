@@ -124,6 +124,8 @@ export const assignmentsAPI = {
     getById: (id) => api.get(`/assignment/${id}`),
     create: (data) => api.post("/assignment/create", data),
     return: (id, data) => api.patch(`/assignment/return/${id}`, data),
+    markAsLostOrDamaged: (id, data) =>
+        api.patch(`/assignment/mark-lost-damaged/${id}`, data),
 };
 
 export const userAPI = {

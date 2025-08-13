@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, message, Space, Tag, App, Select, Input } from 'antd';
+import { Table, Button, Modal, Form, message, Space, Tag, App, Select, Input, Popconfirm } from 'antd';
 import {
     PlusOutlined,
     EyeOutlined,
     CheckSquareOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    WarningOutlined,
+    QuestionCircleOutlined,
 } from '@ant-design/icons';
 import { assignmentsAPI, assetsAPI, userAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +20,7 @@ const AssignmentsContent = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [editingAssignment, setEditingAssignment] = useState(null);
     const [viewingAssignment, setViewingAssignment] = useState(null);
     const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
     const [returningAssignment, setReturningAssignment] = useState(null);
@@ -23,6 +28,37 @@ const AssignmentsContent = () => {
     const [form] = Form.useForm();
     const { user } = useAuth();
     const { message: messageApi, modal: modalApi } = App.useApp();
+    const statusOrder = {
+        'ACTIVE': 1,
+        'RETURNED': 2,
+        'DAMAGED': 3,
+        'LOST': 4,
+        'EXPENDED': 5,
+    };
+
+    const [isLostOrDamagedModalVisible, setIsLostOrDamagedModalVisible] = useState(false);
+    const [editingAssignmentStatus, setEditingAssignmentStatus] = useState(null);
+    const [lostOrDamagedForm] = Form.useForm();
+
+    const showLostOrDamagedModal = (assignment) => {
+        setEditingAssignmentStatus(assignment);
+        setIsLostOrDamagedModalVisible(true);
+    };
+
+    const handleMarkAsLostOrDamaged = async () => {
+        try {
+            const values = await lostOrDamagedForm.validateFields();
+            await assignmentsAPI.markAsLostOrDamaged(editingAssignmentStatus._id, values);
+            messageApi.success(`Asset marked as ${values.status.toLowerCase()} successfully`);
+            fetchData();
+            handleCancel();
+        } catch (error) {
+            messageApi.error(error.message || 'Failed to update asset status');
+        }
+    };
+
+
+
 
     const canManageAssignments = user?.role === 'admin' || user?.role === 'base_commander';
 
@@ -60,8 +96,19 @@ const AssignmentsContent = () => {
         }
     }, [user]);
 
-    const showModal = () => {
-        form.resetFields();
+    const showModal = (assignment = null) => {
+        setEditingAssignment(assignment);
+        if (assignment) {
+            form.setFieldsValue({
+                ...assignment,
+                assetId: assignment.asset?._id,
+                assignedToUserId: assignment.assignedTo?._id,
+                assignmentDate: assignment.assignmentDate ? dayjs(assignment.assignmentDate) : null,
+                expectedReturnDate: assignment.expectedReturnDate ? dayjs(assignment.expectedReturnDate) : null,
+            });
+        } else {
+            form.resetFields();
+        }
         setIsModalVisible(true);
     };
 
@@ -74,24 +121,44 @@ const AssignmentsContent = () => {
         setIsReturnModalVisible(true);
     };
 
+
     const handleCancel = () => {
         setIsModalVisible(false);
         setIsReturnModalVisible(false);
+        setEditingAssignment(null);
         setReturningAssignment(null);
+        setIsLostOrDamagedModalVisible(false);
         returnForm.resetFields();
+        form.resetFields();
     };
 
-    const handleCreateAssignment = async () => {
+    const handleFormSubmit = async () => {
         try {
             const values = await form.validateFields();
-            await assignmentsAPI.create(values);
-            messageApi.success('Assignment created successfully');
+            if (editingAssignment) {
+                await assignmentsAPI.update(editingAssignment._id, values);
+                messageApi.success('Assignment updated successfully');
+            } else {
+                await assignmentsAPI.create(values);
+                messageApi.success('Assignment created successfully');
+            }
             fetchData();
             handleCancel();
         } catch (error) {
-            messageApi.error(error.message || 'Failed to create assignment');
+            messageApi.error(error.message || `Failed to ${editingAssignment ? 'update' : 'create'} assignment`);
         }
     };
+
+    // const handleDelete = async (id) => {
+    //     try {
+    //         await assignmentsAPI.delete(id);
+    //         messageApi.success('Assignment deleted successfully');
+    //         fetchData();
+    //     } catch (error) {
+    //         messageApi.error(error.message || 'Failed to delete assignment');
+    //     }
+    // };
+
 
     const handleReturnAsset = async () => {
         try {
@@ -121,10 +188,38 @@ const AssignmentsContent = () => {
     };
 
     const columns = [
-        { title: 'Asset', dataIndex: ['asset', 'serialNumber'], key: 'asset' },
-        { title: 'Assigned To', dataIndex: ['assignedTo', 'fullname'], key: 'assignedTo' },
-        { title: 'Assignment Date', dataIndex: 'assignmentDate', key: 'assignmentDate', render: (date) => dayjs(date).format('YYYY-MM-DD') },
-        { title: 'Status', dataIndex: 'status', key: 'status', render: getStatusTag },
+        {
+            title: 'ID'
+            , dataIndex: '_id',
+            key: '_id'
+        },
+        {
+            title: 'Asset',
+            dataIndex: ['asset', 'serialNumber'],
+            key: 'asset'
+        },
+        {
+            title: 'Assigned To',
+            dataIndex: ['assignedTo', 'fullname'],
+            key: 'assignedTo'
+        },
+        {
+            title: 'Assignment Date',
+            dataIndex: 'assignmentDate',
+            key: 'assignmentDate', render: (date) => dayjs(date).format('YYYY-MM-DD')
+        },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status', render: getStatusTag,
+            sorter: (a, b) => statusOrder[a.status] - statusOrder[b.status],
+        },
+        {
+            title: "Created At",
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+        },
         {
             title: 'Actions',
             key: 'actions',
@@ -132,10 +227,29 @@ const AssignmentsContent = () => {
                 <Space>
                     <Button icon={<EyeOutlined />} onClick={() => showViewModal(record)} />
                     {canManageAssignments && record.status === 'ACTIVE' && (
-                        <Button icon={<CheckSquareOutlined />} onClick={() => showReturnModal(record)}>
-                            Return
-                        </Button>
+                        <>
+                            <Button icon={<CheckSquareOutlined />} onClick={() => showReturnModal(record)}>
+                                Return
+                            </Button>
+                            <Button icon={<WarningOutlined />} danger onClick={() => showLostOrDamagedModal(record)}>
+                                Report Issue
+                            </Button>
+                        </>
+
                     )}
+                    {/* {canManageAssignments && (
+                        <>
+                            <Button icon={<EditOutlined />} onClick={() => showModal(record)} />
+                            <Popconfirm
+                                title="Are you sure you want to delete this assignment?"
+                                onConfirm={() => handleDelete(record._id)}
+                                okText="Yes"
+                                cancelText="No"
+                            >
+                                <Button icon={<DeleteOutlined />} danger />
+                            </Popconfirm>
+                        </>
+                    )} */}
                 </Space>
             ),
         },
@@ -147,7 +261,7 @@ const AssignmentsContent = () => {
                 <Button
                     type="primary"
                     icon={<PlusOutlined />}
-                    onClick={showModal}
+                    onClick={() => showModal()}
                     style={{ marginBottom: 16, float: 'right' }}
                 >
                     Create Assignment
@@ -161,9 +275,9 @@ const AssignmentsContent = () => {
                 scroll={{ x: true }}
             />
             <Modal
-                title="Create New Assignment"
+                title={editingAssignment ? 'Edit Assignment' : 'Create New Assignment'}
                 open={isModalVisible}
-                onOk={handleCreateAssignment}
+                onOk={handleFormSubmit}
                 onCancel={handleCancel}
                 width={600}
             >
@@ -211,6 +325,28 @@ const AssignmentsContent = () => {
                         <p><strong>Notes:</strong> {viewingAssignment.notes}</p>
                     </div>
                 )}
+            </Modal>
+            <Modal
+                title="Report Asset Issue"
+                open={isLostOrDamagedModalVisible}
+                onOk={handleMarkAsLostOrDamaged}
+                onCancel={handleCancel}
+            >
+                <Form form={lostOrDamagedForm} layout="vertical">
+                    <Form.Item
+                        name="status"
+                        label="Status"
+                        rules={[{ required: true, message: 'Please select a status!' }]}
+                    >
+                        <Select placeholder="Select a status">
+                            <Select.Option value="LOST">Lost</Select.Option>
+                            <Select.Option value="DAMAGED">Damaged</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item name="notes" label="Notes">
+                        <Input.TextArea rows={2} placeholder="Provide details about the issue..." />
+                    </Form.Item>
+                </Form>
             </Modal>
         </div>
     );

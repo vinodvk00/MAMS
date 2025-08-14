@@ -10,6 +10,7 @@ import {
     verifyJWT,
     logisticsOfficerOnly,
 } from "../middlewares/auth.middleware.js";
+import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const purchaseRouter = Router();
 
@@ -193,7 +194,7 @@ purchaseRouter.use(logisticsOfficerOnly);
  *       404:
  *         description: Base or equipment type not found
  */
-purchaseRouter.post("/create", makePurchase);
+purchaseRouter.post("/create", logApiRequest("PURCHASE_CREATE"), makePurchase);
 
 /**
  * @swagger
@@ -316,7 +317,11 @@ purchaseRouter.post("/create", makePurchase);
  *       404:
  *         description: Purchase not found
  */
-purchaseRouter.patch("/update/:id", updatePurchase);
+purchaseRouter.patch(
+    "/update/:id",
+    logApiRequest("PURCHASE_UPDATE"),
+    updatePurchase
+);
 
 /**
  * @swagger
@@ -503,6 +508,6 @@ purchaseRouter.get("/:id", getPurchaseById);
  *       404:
  *         description: Purchase not found
  */
-purchaseRouter.delete("/:id", deletePurchase);
+purchaseRouter.delete("/:id", logApiRequest("PURCHASE_DELETE"), deletePurchase);
 
 export default purchaseRouter;

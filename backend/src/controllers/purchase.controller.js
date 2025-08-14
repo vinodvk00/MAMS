@@ -1,7 +1,6 @@
 import { Purchase } from "../models/purchase.models.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
-import { Asset } from "../models/asset.models.js";
 
 export const makePurchase = asyncHandler(async (req, res) => {
     const {
@@ -36,6 +35,9 @@ export const makePurchase = asyncHandler(async (req, res) => {
         notes,
         createdBy: req.user._id,
     });
+
+    res.locals.data = newPurchase;
+    res.locals.model = "Purchase";
 
     return res.status(201).json({
         message: "Purchase created successfully",
@@ -105,6 +107,9 @@ export const updatePurchase = asyncHandler(async (req, res) => {
         .populate("createdBy", "username fullname")
         .populate("assets");
 
+    res.locals.data = updatedPurchase;
+    res.locals.model = "Purchase";
+
     return res.status(200).json({
         message: "Purchase updated successfully",
         status: "success",
@@ -131,6 +136,9 @@ export const deletePurchase = asyncHandler(async (req, res) => {
     }
 
     await Purchase.findByIdAndDelete(id);
+
+    res.locals.data = existingPurchase;
+    res.locals.model = "Purchase";
 
     return res.status(200).json({
         message: "Purchase deleted successfully",

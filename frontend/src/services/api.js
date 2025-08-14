@@ -144,4 +144,8 @@ export const userAPI = {
     changeRole: (id, role) => api.patch(`/user/change-role/${id}`, { role }),
 };
 
+export const logsAPI = {
+    getAll: (params) => api.get("/logs", { params }),
+};
+
 export default api;

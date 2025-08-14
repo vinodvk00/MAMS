@@ -12,6 +12,7 @@ import {
     TeamOutlined,
     ToolOutlined,
     MinusCircleOutlined,
+    AuditOutlined
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -64,14 +65,19 @@ const Layout = ({ children }) => {
         },
         {
             key: 'expenditures',
-            icon: <MinusCircleOutlined />, 
+            icon: <MinusCircleOutlined />,
             label: 'Expenditures',
         },
         {
             key: 'users',
             icon: <UserOutlined />,
             label: 'Users',
-        }
+        },
+        user?.role === 'admin' && {
+            key: 'audit-logs',
+            icon: <AuditOutlined />,
+            label: 'Audit Logs',
+        },
     ];
 
     const userMenuItems = [

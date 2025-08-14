@@ -22,7 +22,13 @@ const apiLogSchema = new Schema(
         },
         userRole: {
             type: String,
-            enum: ["admin", "base_commander", "logistics_officer", null],
+            enum: [
+                "admin",
+                "base_commander",
+                "logistics_officer",
+                "user",
+                null,
+            ],
         },
         userBase: {
             type: mongoose.Schema.Types.ObjectId,
@@ -50,18 +56,34 @@ const apiLogSchema = new Schema(
                     "ASSET_UPDATE",
                     "ASSET_DELETE",
                     "PURCHASE_CREATE",
+                    "PURCHASE_UPDATE",
+                    "PURCHASE_DELETE",
                     "TRANSFER_INITIATE",
+                    "TRANSFER_APPROVE",
                     "TRANSFER_COMPLETE",
+                    "TRANSFER_CANCEL",
+                    "TRANSFER_UPDATE",
                     "ASSIGNMENT_CREATE",
                     "ASSIGNMENT_RETURN",
+                    "ASSIGNMENT_UPDATE",
+                    "ASSIGNMENT_DELETE",
+                    "ASSIGNMENT_MARK_LOST_DAMAGED",
                     "EXPENDITURE_CREATE",
+                    "EXPENDITURE_APPROVE",
+                    "EXPENDITURE_COMPLETE",
+                    "EXPENDITURE_CANCEL",
+                    "EXPENDITURE_UPDATE",
+                    "EXPENDITURE_DELETE",
+                    "USER_UPDATE",
+                    "USER_DELETE",
+                    "USER_CHANGE_ROLE",
                     "LOGIN",
                     "LOGOUT",
                 ],
             },
             affectedRecords: [
                 {
-                    model: String, // "Asset", "Purchase", etc.
+                    model: String,
                     id: mongoose.Schema.Types.ObjectId,
                 },
             ],
@@ -75,6 +97,8 @@ const apiLogSchema = new Schema(
 apiLogSchema.index({ userId: 1, createdAt: -1 });
 apiLogSchema.index({ endpoint: 1, createdAt: -1 });
 apiLogSchema.index({ statusCode: 1 });
-apiLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7776000 });
+
+// Auto-delete logs after 90 days
+apiLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7776000 }); 
 
 export const ApiLog = mongoose.model("ApiLog", apiLogSchema);

@@ -17,6 +17,7 @@ import {
     swaggerUiOptions,
 } from "./config/swagger.config.js";
 import dotenv from "dotenv";
+import apiLogRouter from "./routes/apiLog.routes.js";
 
 dotenv.config({
     path: "./.env",
@@ -66,6 +67,8 @@ app.use("/api/v1/assignment/", assignmentRouter);
 app.use("/api/v1/expenditure/", expenditureRouter);
 
 app.use("/api/v1/dashboard/", dashboardRouter);
+
+app.use("/api/v1/logs", apiLogRouter)
 
 app.get("/", (req, res) => {
     return res.status(200).json({

@@ -10,9 +10,10 @@ import {
     registerCommander,
     registerUser,
     removeCommander,
-    updateUser
+    updateUser,
 } from "../controllers/user.controller.js";
 import { adminOnly, verifyJWT } from "../middlewares/auth.middleware.js";
+import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const userRouter = Router();
 
@@ -354,7 +355,7 @@ userRouter.post("/register", registerUser);
  *       500:
  *         description: Internal server error
  */
-userRouter.post("/login", loginUser);
+userRouter.post("/login", logApiRequest("LOGIN"), loginUser);
 
 /**
  * @swagger
@@ -391,7 +392,7 @@ userRouter.post("/login", loginUser);
  *       500:
  *         description: Internal server error
  */
-userRouter.get("/logout", verifyJWT, logoutUser);
+userRouter.get("/logout", verifyJWT, logApiRequest("LOGOUT"), logoutUser);
 
 /**
  * @swagger
@@ -470,7 +471,13 @@ userRouter.get("/logout", verifyJWT, logoutUser);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-userRouter.patch("/:userId", verifyJWT, adminOnly, updateUser);
+userRouter.patch(
+    "/:userId",
+    verifyJWT,
+    adminOnly,
+    logApiRequest("USER_UPDATE"),
+    updateUser
+);
 
 /**
  * @swagger
@@ -759,7 +766,13 @@ userRouter.get("/:id", verifyJWT, adminOnly, getUserById);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-userRouter.patch("/change-role/:userId", verifyJWT, adminOnly, changeRole);
+userRouter.patch(
+    "/change-role/:userId",
+    verifyJWT,
+    adminOnly,
+    logApiRequest("USER_CHANGE_ROLE"),
+    changeRole
+);
 
 /**
  * @swagger

@@ -15,6 +15,7 @@ import Equipments from './pages/Equipments';
 import Bases from './pages/Bases';
 import Users from './pages/Users';
 import Expenditures from './pages/Expenditures';
+import AuditLogs from './pages/AuditLogs';
 
 const AppLayout = () => (
   <Layout>
@@ -28,6 +29,7 @@ const AppLayout = () => (
       <Route path="/bases" element={<Bases />} />
       <Route path="/users" element={<Users />} />
       <Route path="/expenditures" element={<Expenditures />} />
+      <Route path="/audit-logs" element={<AuditLogs />} />
 
       {/* Default route for authenticated users */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

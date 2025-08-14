@@ -501,6 +501,9 @@ export const loginUser = async (req, res) => {
         const { accessToken, refreshToken } =
             await generateAccessAndRefreshTokens(user._id);
 
+        res.locals.data = user;
+        res.locals.model = "User";
+
         return res
             .status(200)
             .cookie("accessToken", accessToken, COOKIE_OPTIONS)

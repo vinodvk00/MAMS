@@ -15,6 +15,7 @@ import {
     logisticsOfficerOnly,
     baseComanderOnly,
 } from "../middlewares/auth.middleware.js";
+import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const transferRouter = Router();
 
@@ -138,7 +139,12 @@ transferRouter.use(verifyJWT);
  *       404:
  *         description: Base or equipment type not found
  */
-transferRouter.post("/initiate", baseComanderOnly, initiateTransfer);
+transferRouter.post(
+    "/initiate",
+    baseComanderOnly,
+    logApiRequest("TRANSFER_INITIATE"),
+    initiateTransfer
+);
 
 /**
  * @swagger
@@ -196,7 +202,12 @@ transferRouter.post("/initiate", baseComanderOnly, initiateTransfer);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-transferRouter.patch("/approve/:id", logisticsOfficerOnly, approveTransfer);
+transferRouter.patch(
+    "/approve/:id",
+    logisticsOfficerOnly,
+    logApiRequest("TRANSFER_APPROVE"),
+    approveTransfer
+);
 
 /**
  * @swagger
@@ -268,6 +279,7 @@ transferRouter.patch(
             });
         }
     },
+    logApiRequest("TRANSFER_COMPLETE"),
     completeTransfer
 );
 
@@ -340,6 +352,7 @@ transferRouter.patch(
             });
         }
     },
+    logApiRequest("TRANSFER_CANCEL"),
     cancelTransfer
 );
 

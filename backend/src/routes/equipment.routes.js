@@ -7,6 +7,7 @@ import {
     updateEquipmentType,
 } from "../controllers/equipmentType.controller.js";
 import { adminOnly, verifyJWT } from "../middlewares/auth.middleware.js";
+import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const equipmentRouter = new Router();
 
@@ -24,16 +25,16 @@ const equipmentRouter = new Router();
  *     summary: Create equipment type
  *     description: |
  *       Creates a new equipment type category in the system.
- *       
+ *
  *       **Required Role:** Admin only
- *       
+ *
  *       **Equipment Categories:**
  *       - `WEAPON`: Firearms, missiles, explosive devices
  *       - `VEHICLE`: Military vehicles, aircraft, vessels
  *       - `AMMUNITION`: Bullets, shells, explosives
  *       - `EQUIPMENT`: Communications, medical, engineering equipment
  *       - `OTHER`: Miscellaneous military assets
- *       
+ *
  *       **Validation:**
  *       - Name must be unique
  *       - Code must be unique and will be converted to uppercase
@@ -151,7 +152,13 @@ const equipmentRouter = new Router();
  *       403:
  *         $ref: '#/components/responses/ForbiddenError'
  */
-equipmentRouter.post("/create", verifyJWT, adminOnly, createEquipmentType);
+equipmentRouter.post(
+    "/create",
+    verifyJWT,
+    adminOnly,
+    logApiRequest("EQUIPMENT_CREATE"),
+    createEquipmentType
+);
 
 /**
  * @swagger
@@ -160,9 +167,9 @@ equipmentRouter.post("/create", verifyJWT, adminOnly, createEquipmentType);
  *     summary: Update equipment type
  *     description: |
  *       Updates an existing equipment type. Only provided fields will be updated.
- *       
+ *
  *       **Required Role:** Admin only
- *       
+ *
  *       **Note:** Code will be automatically converted to uppercase if provided.
  *     tags: [Equipment Types]
  *     security:
@@ -241,7 +248,13 @@ equipmentRouter.post("/create", verifyJWT, adminOnly, createEquipmentType);
  *               message: "Equipment type not found"
  *               status: "error"
  */
-equipmentRouter.patch("/:id", verifyJWT, adminOnly, updateEquipmentType);
+equipmentRouter.patch(
+    "/:id",
+    verifyJWT,
+    adminOnly,
+    logApiRequest("EQUIPMENT_UPDATE"),
+    updateEquipmentType
+);
 
 /**
  * @swagger
@@ -250,9 +263,9 @@ equipmentRouter.patch("/:id", verifyJWT, adminOnly, updateEquipmentType);
  *     summary: Get all equipment types
  *     description: |
  *       Retrieves all equipment types in the system.
- *       
+ *
  *       **Required Role:** Admin only
- *       
+ *
  *       Returns all equipment types including inactive ones.
  *       Use the `isActive` field to filter active equipment types.
  *     tags: [Equipment Types]
@@ -313,7 +326,7 @@ equipmentRouter.get("/getAll", verifyJWT, adminOnly, getAllEquipmentTypes);
  *     summary: Get equipment type by ID
  *     description: |
  *       Retrieves a specific equipment type by its ID.
- *       
+ *
  *       **Required Role:** Admin only
  *     tags: [Equipment Types]
  *     security:
@@ -381,15 +394,15 @@ equipmentRouter.get("/:id", verifyJWT, adminOnly, getEquipmentTypeById);
  *     summary: Delete equipment type
  *     description: |
  *       Permanently deletes an equipment type from the system.
- *       
+ *
  *       **Required Role:** Admin only
- *       
+ *
  *       **⚠️ Warning:** This action cannot be undone and will affect:
  *       - All assets of this equipment type
  *       - All purchases for this equipment type
  *       - All transfers involving this equipment type
  *       - All expenditures of this equipment type
- *       
+ *
  *       **Recommendation:** Consider deactivating the equipment type instead by setting `isActive: false`.
  *     tags: [Equipment Types]
  *     security:
@@ -445,6 +458,12 @@ equipmentRouter.get("/:id", verifyJWT, adminOnly, getEquipmentTypeById);
  *               message: "Equipment type not found"
  *               status: "error"
  */
-equipmentRouter.delete("/:id", verifyJWT, adminOnly, deleteEquipmentType);
+equipmentRouter.delete(
+    "/:id",
+    verifyJWT,
+    adminOnly,
+    logApiRequest("EQUIPMENT_DELETE"),
+    deleteEquipmentType
+);
 
 export default equipmentRouter;

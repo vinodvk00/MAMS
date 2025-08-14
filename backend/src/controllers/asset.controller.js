@@ -102,6 +102,9 @@ export const getAssetById = asyncHandler(async (req, res) => {
         });
     }
 
+    res.locals.data = asset;
+    res.locals.model = "Asset";
+
     return res.status(200).json({
         message: "Asset retrieved successfully",
         status: "success",
@@ -177,6 +180,9 @@ export const updateAsset = asyncHandler(async (req, res) => {
         .populate("currentBase", "name code location")
         .populate("purchaseId");
 
+    res.locals.data = updatedAsset;
+    res.locals.model = "Asset";
+
     return res.status(200).json({
         message: "Asset updated successfully",
         status: "success",
@@ -203,6 +209,9 @@ export const deleteAsset = asyncHandler(async (req, res) => {
     }
 
     await Asset.findByIdAndDelete(id);
+
+    res.locals.data = existingAsset;
+    res.locals.model = "Asset";
 
     return res.status(200).json({
         message: "Asset deleted successfully",

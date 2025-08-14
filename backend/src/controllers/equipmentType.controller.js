@@ -18,6 +18,9 @@ export const createEquipmentType = asyncHandler(async (req, res) => {
         description,
     });
 
+    res.locals.data = newEquipment;
+    res.locals.model = "EquipmentType";
+
     return res.status(201).json({
         message: "Equipment type created successfully",
         status: "success",
@@ -58,6 +61,9 @@ export const updateEquipmentType = asyncHandler(async (req, res) => {
         { new: true, runValidators: true }
     );
 
+    res.locals.data = updatedEquipment;
+    res.locals.model = "EquipmentType";
+
     return res.status(200).json({
         message: "Equipment type updated successfully",
         status: "success",
@@ -85,6 +91,9 @@ export const deleteEquipmentType = asyncHandler(async (req, res) => {
     }
 
     await EquipmentType.findByIdAndDelete(id);
+
+    res.locals.data = existingEquipment;
+    res.locals.model = "EquipmentType";
 
     return res.status(200).json({
         message: "Equipment type deleted successfully",

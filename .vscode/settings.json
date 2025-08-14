@@ -1,0 +1,10 @@
+{
+  "editor.tokenColorCustomizations": {
+    "comments": "",
+    "textMateRules": []
+  },
+  "editor.foldingStrategy": "auto",
+  "editor.foldingImportsByDefault": false,
+  "editor.foldingMaximumRegions": 5000,
+  "editor.foldLevel": 2
+}

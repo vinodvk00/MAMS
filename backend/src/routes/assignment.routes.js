@@ -14,6 +14,7 @@ import {
     adminOnly,
     baseComanderOnly,
 } from "../middlewares/auth.middleware.js";
+import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const assignmentRouter = Router();
 
@@ -144,7 +145,11 @@ assignmentRouter.use(baseComanderOnly);
  *       404:
  *         description: Asset or user not found
  */
-assignmentRouter.post("/create", createAssignment);
+assignmentRouter.post(
+    "/create",
+    logApiRequest("ASSIGNMENT_CREATE"),
+    createAssignment
+);
 
 /**
  * @swagger
@@ -335,7 +340,11 @@ assignmentRouter.get("/base", getAssignmentsByBase);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-assignmentRouter.patch("/return/:id", returnAsset);
+assignmentRouter.patch(
+    "/return/:id",
+    logApiRequest("ASSIGNMENT_RETURN"),
+    returnAsset
+);
 
 /**
  * @swagger
@@ -417,7 +426,11 @@ assignmentRouter.patch("/return/:id", returnAsset);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-assignmentRouter.patch("/mark-lost-damaged/:id", markAssetLostOrDamaged);
+assignmentRouter.patch(
+    "/mark-lost-damaged/:id",
+    logApiRequest("ASSIGNMENT_MARK_LOST_DAMAGED"),
+    markAssetLostOrDamaged
+);
 
 /**
  * @swagger
@@ -479,7 +492,11 @@ assignmentRouter.patch("/mark-lost-damaged/:id", markAssetLostOrDamaged);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-assignmentRouter.patch("/update/:id", updateAssignment);
+assignmentRouter.patch(
+    "/update/:id",
+    logApiRequest("ASSIGNMENT_UPDATE"),
+    updateAssignment
+);
 
 /**
  * @swagger
@@ -583,6 +600,11 @@ assignmentRouter.get("/:id", getAssignmentById);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-assignmentRouter.delete("/:id", baseComanderOnly, deleteAssignment);
+assignmentRouter.delete(
+    "/:id",
+    baseComanderOnly,
+    logApiRequest("ASSIGNMENT_DELETE"),
+    deleteAssignment
+);
 
 export default assignmentRouter;

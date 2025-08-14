@@ -13,6 +13,7 @@ import {
     logisticsOfficerOnly,
     baseComanderOnly,
 } from "../middlewares/auth.middleware.js";
+import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const assetRouter = Router();
 
@@ -126,7 +127,12 @@ assetRouter.use(verifyJWT);
  *       403:
  *         $ref: '#/components/responses/ForbiddenError'
  */
-assetRouter.post("/create", logisticsOfficerOnly, createAsset);
+assetRouter.post(
+    "/create",
+    logisticsOfficerOnly,
+    logApiRequest("ASSET_CREATE"),
+    createAsset
+);
 
 /**
  * @swagger
@@ -385,7 +391,12 @@ assetRouter.get("/:id", baseComanderOnly, getAssetById);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-assetRouter.patch("/:id", baseComanderOnly, updateAsset);
+assetRouter.patch(
+    "/:id",
+    baseComanderOnly,
+    logApiRequest("ASSET_UPDATE"),
+    updateAsset
+);
 
 /**
  * @swagger
@@ -446,6 +457,11 @@ assetRouter.patch("/:id", baseComanderOnly, updateAsset);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-assetRouter.delete("/:id", adminOnly, deleteAsset);
+assetRouter.delete(
+    "/:id",
+    adminOnly,
+    logApiRequest("ASSET_DELETE"),
+    deleteAsset
+);
 
 export default assetRouter;

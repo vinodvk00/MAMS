@@ -16,6 +16,7 @@ import {
     logisticsOfficerOnly,
     baseComanderOnly,
 } from "../middlewares/auth.middleware.js";
+import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const expenditureRouter = Router();
 
@@ -182,7 +183,12 @@ const baseCommanderOrLogistics = (req, res, next) => {
  *       404:
  *         description: Base or equipment type not found
  */
-expenditureRouter.post("/create", baseCommanderOrLogistics, createExpenditure);
+expenditureRouter.post(
+    "/create",
+    baseCommanderOrLogistics,
+    logApiRequest("EXPENDITURE_CREATE"),
+    createExpenditure
+);
 
 /**
  * @swagger
@@ -243,6 +249,7 @@ expenditureRouter.post("/create", baseCommanderOrLogistics, createExpenditure);
 expenditureRouter.patch(
     "/approve/:id",
     baseCommanderOrLogistics,
+    logApiRequest("EXPENDITURE_APPROVE"),
     approveExpenditure
 );
 
@@ -301,6 +308,7 @@ expenditureRouter.patch(
 expenditureRouter.patch(
     "/complete/:id",
     baseCommanderOrLogistics,
+    logApiRequest("EXPENDITURE_COMPLETE"),
     completeExpenditure
 );
 
@@ -352,6 +360,7 @@ expenditureRouter.patch(
 expenditureRouter.patch(
     "/cancel/:id",
     baseCommanderOrLogistics,
+    logApiRequest("EXPENDITURE_CANCEL"),
     cancelExpenditure
 );
 
@@ -420,6 +429,7 @@ expenditureRouter.patch(
 expenditureRouter.patch(
     "/update/:id",
     baseCommanderOrLogistics,
+    logApiRequest("EXPENDITURE_UPDATE"),
     updateExpenditure
 );
 
@@ -632,6 +642,11 @@ expenditureRouter.get("/:id", baseCommanderOrLogistics, getExpenditureById);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-expenditureRouter.delete("/:id", adminOnly, deleteExpenditure);
+expenditureRouter.delete(
+    "/:id",
+    adminOnly,
+    logApiRequest("EXPENDITURE_DELETE"),
+    deleteExpenditure
+);
 
 export default expenditureRouter;

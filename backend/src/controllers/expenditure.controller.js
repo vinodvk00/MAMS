@@ -132,6 +132,9 @@ export const createExpenditure = asyncHandler(async (req, res) => {
         .populate("authorizedBy", "username fullname")
         .populate("assets.asset");
 
+    res.locals.data = populatedExpenditure;
+    res.locals.model = "Expenditure";
+
     return res.status(201).json({
         message: "Expenditure created successfully",
         status: "success",
@@ -303,6 +306,9 @@ export const approveExpenditure = asyncHandler(async (req, res) => {
         .populate("approvedBy", "username fullname")
         .populate("assets.asset");
 
+    res.locals.data = updatedExpenditure;
+    res.locals.model = "Expenditure";
+
     return res.status(200).json({
         message: "Expenditure approved successfully",
         status: "success",
@@ -394,6 +400,9 @@ export const completeExpenditure = asyncHandler(async (req, res) => {
         .populate("completedBy", "username fullname")
         .populate("assets.asset");
 
+    res.locals.data = updatedExpenditure;
+    res.locals.model = "Expenditure";
+
     return res.status(200).json({
         message: "Expenditure completed successfully",
         status: "success",
@@ -454,6 +463,9 @@ export const cancelExpenditure = asyncHandler(async (req, res) => {
         .populate("approvedBy", "username fullname")
         .populate("completedBy", "username fullname")
         .populate("assets.asset");
+
+    res.locals.data = updatedExpenditure;
+    res.locals.model = "Expenditure";
 
     return res.status(200).json({
         message: "Expenditure cancelled successfully",
@@ -521,6 +533,9 @@ export const updateExpenditure = asyncHandler(async (req, res) => {
         .populate("completedBy", "username fullname")
         .populate("assets.asset");
 
+    res.locals.data = updatedExpenditure;
+    res.locals.model = "Expenditure";
+
     return res.status(200).json({
         message: "Expenditure updated successfully",
         status: "success",
@@ -554,6 +569,9 @@ export const deleteExpenditure = asyncHandler(async (req, res) => {
     }
 
     await Expenditure.findByIdAndDelete(id);
+
+    res.locals.data = existingExpenditure;
+    res.locals.model = "Expenditure";
 
     return res.status(200).json({
         message: "Expenditure deleted successfully",

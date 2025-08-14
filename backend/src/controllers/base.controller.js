@@ -20,6 +20,9 @@ export const createBase = async (req, res) => {
             contactInfo,
         });
 
+        res.locals.data = newBase;
+        res.locals.model = "Base";
+
         return res.status(201).json({
             success: true,
             message: "Base created successfully",
@@ -123,6 +126,9 @@ export const updateBase = async (req, res) => {
             });
         }
 
+        res.locals.data = updatedBase;
+        res.locals.model = "Base";
+
         return res.status(200).json({
             success: true,
             message: "Base updated successfully",
@@ -156,6 +162,10 @@ export const deleteBase = async (req, res) => {
                 message: "Base not found",
             });
         }
+
+        res.locals.data = deletedBase;
+        res.locals.model = "Base";
+
         return res.status(200).json({
             success: true,
             message: "Base deleted successfully",

@@ -5,8 +5,14 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
 
 export const createAssignment = asyncHandler(async (req, res) => {
-    const { assetId, assignedToUserId, expectedReturnDate, purpose, notes, assignmentDate } =
-        req.body;
+    const {
+        assetId,
+        assignedToUserId,
+        expectedReturnDate,
+        purpose,
+        notes,
+        assignmentDate,
+    } = req.body;
 
     if (!assetId || !assignedToUserId) {
         return res.status(400).json({
@@ -110,6 +116,9 @@ export const createAssignment = asyncHandler(async (req, res) => {
         .populate("assignedTo", "username fullname")
         .populate("base", "name code location")
         .populate("assignedBy", "username fullname");
+
+    res.locals.data = createdAssignment;
+    res.locals.model = "Assignment";
 
     return res.status(201).json({
         message: "Asset assigned successfully",
@@ -313,6 +322,9 @@ export const returnAsset = asyncHandler(async (req, res) => {
 
     await Asset.findByIdAndUpdate(assignment.asset._id, assetUpdate);
 
+    res.locals.data = updatedAssignment;
+    res.locals.model = "Assignment";
+
     return res.status(200).json({
         message: "Asset returned successfully",
         status: "success",
@@ -394,6 +406,9 @@ export const updateAssignment = asyncHandler(async (req, res) => {
         .populate("base", "name code location")
         .populate("assignedBy", "username fullname");
 
+    res.locals.data = updatedAssignment;
+    res.locals.model = "Assignment";
+
     return res.status(200).json({
         message: "Assignment updated successfully",
         status: "success",
@@ -437,6 +452,9 @@ export const deleteAssignment = asyncHandler(async (req, res) => {
     }
 
     await Assignment.findByIdAndDelete(id);
+
+    res.locals.data = existingAssignment;
+    res.locals.model = "Assignment";
 
     return res.status(200).json({
         message: "Assignment deleted successfully",

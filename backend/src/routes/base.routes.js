@@ -7,6 +7,7 @@ import {
     deleteBase,
 } from "../controllers/base.controller.js";
 import { adminOnly, verifyJWT } from "../middlewares/auth.middleware.js";
+import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const baseRouter = Router();
 
@@ -227,7 +228,7 @@ baseRouter.get("/", getAllBases);
  *       500:
  *         description: Failed to create base
  */
-baseRouter.post("/create", createBase);
+baseRouter.post("/create", logApiRequest("BASE_CREATE"), createBase);
 
 /**
  * @swagger
@@ -406,7 +407,7 @@ baseRouter.get("/:id", getBaseById);
  *       500:
  *         description: Failed to update base
  */
-baseRouter.patch("/:id", updateBase);
+baseRouter.patch("/:id", logApiRequest("BASE_UPDATE"), updateBase);
 
 /**
  * @swagger
@@ -466,6 +467,6 @@ baseRouter.patch("/:id", updateBase);
  *       500:
  *         description: Failed to delete base
  */
-baseRouter.delete("/:id", deleteBase);
+baseRouter.delete("/:id", logApiRequest("BASE_DELETE"), deleteBase);
 
 export default baseRouter;

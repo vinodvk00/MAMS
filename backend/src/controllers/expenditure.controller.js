@@ -43,17 +43,15 @@ export const createExpenditure = asyncHandler(async (req, res) => {
     ]);
 
     if (!baseDoc) {
-        return res.status(404).json({
-            message: "Base not found",
-            status: "error",
-        });
+        return res
+            .status(404)
+            .json({ message: "Base not found", status: "error" });
     }
 
     if (!equipmentTypeDoc) {
-        return res.status(404).json({
-            message: "Equipment type not found",
-            status: "error",
-        });
+        return res
+            .status(404)
+            .json({ message: "Equipment type not found", status: "error" });
     }
 
     let expenditureAssets = [];
@@ -64,26 +62,27 @@ export const createExpenditure = asyncHandler(async (req, res) => {
             _id: { $in: assetIds },
             currentBase: base,
             equipmentType: equipmentType,
+            status: "AVAILABLE",
         });
 
         if (assets.length !== assetIds.length) {
             return res.status(400).json({
                 message:
-                    "Some specified assets are not found or not at the specified base",
+                    "Some specified assets are not found or not available at the specified base",
                 status: "error",
             });
         }
 
-        expenditureAssets = assets.map((asset) => asset._id);
-        totalAvailableQuantity = assets.reduce(
-            (sum, asset) => sum + (asset.quantity || 1),
-            0
-        );
+        expenditureAssets = assets.map((asset) => ({
+            asset: asset._id,
+            quantity: 1,
+        }));
+        totalAvailableQuantity = assets.length;
     } else {
         const availableAssets = await Asset.find({
             currentBase: base,
             equipmentType: equipmentType,
-            status: { $in: ["AVAILABLE", "ASSIGNED"] },
+            status: "AVAILABLE",
         }).sort({ createdAt: 1 });
 
         if (availableAssets.length === 0) {
@@ -101,7 +100,7 @@ export const createExpenditure = asyncHandler(async (req, res) => {
             const assetQty = asset.quantity || 1;
             const expendQty = Math.min(assetQty, remainingQuantity);
 
-            expenditureAssets.push(asset._id);
+            expenditureAssets.push({ asset: asset._id, quantity: expendQty });
             totalAvailableQuantity += expendQty;
             remainingQuantity -= expendQty;
         }
@@ -131,7 +130,7 @@ export const createExpenditure = asyncHandler(async (req, res) => {
         .populate("equipmentType", "name category code")
         .populate("base", "name code location")
         .populate("authorizedBy", "username fullname")
-        .populate("assets");
+        .populate("assets.asset");
 
     return res.status(201).json({
         message: "Expenditure created successfully",
@@ -168,7 +167,7 @@ export const getAllExpenditures = asyncHandler(async (req, res) => {
         .populate("authorizedBy", "username fullname")
         .populate("approvedBy", "username fullname")
         .populate("completedBy", "username fullname")
-        .populate("assets")
+        .populate("assets.asset")
         .sort({ expenditureDate: -1 });
 
     return res.status(200).json({
@@ -194,7 +193,7 @@ export const getExpenditureById = asyncHandler(async (req, res) => {
         .populate("authorizedBy", "username fullname")
         .populate("approvedBy", "username fullname")
         .populate("completedBy", "username fullname")
-        .populate("assets");
+        .populate("assets.asset");
 
     if (!expenditure) {
         return res.status(404).json({
@@ -243,7 +242,7 @@ export const getExpendituresByBase = asyncHandler(async (req, res) => {
         .populate("authorizedBy", "username fullname")
         .populate("approvedBy", "username fullname")
         .populate("completedBy", "username fullname")
-        .populate("assets")
+        .populate("assets.asset")
         .sort({ expenditureDate: -1 });
 
     return res.status(200).json({
@@ -302,7 +301,7 @@ export const approveExpenditure = asyncHandler(async (req, res) => {
         .populate("base", "name code location")
         .populate("authorizedBy", "username fullname")
         .populate("approvedBy", "username fullname")
-        .populate("assets");
+        .populate("assets.asset");
 
     return res.status(200).json({
         message: "Expenditure approved successfully",
@@ -321,7 +320,7 @@ export const completeExpenditure = asyncHandler(async (req, res) => {
         });
     }
 
-    const expenditure = await Expenditure.findById(id).populate("assets");
+    const expenditure = await Expenditure.findById(id).populate("assets.asset");
     if (!expenditure) {
         return res.status(404).json({
             message: "Expenditure not found",
@@ -347,21 +346,35 @@ export const completeExpenditure = asyncHandler(async (req, res) => {
         }
     }
 
-    const assetIdsToUpdate = expenditure.assets.map((asset) => asset._id);
-    await Asset.updateMany(
-        { _id: { $in: assetIdsToUpdate } },
-        { status: "EXPENDED", condition: "UNSERVICEABLE" }
-    );
+    for (const item of expenditure.assets) {
+        const assetId = item.asset._id;
+        const expendedQuantity = item.quantity;
 
+        const updatedAsset = await Asset.findByIdAndUpdate(
+            assetId,
+            { $inc: { quantity: -expendedQuantity } },
+            { new: true }
+        );
+
+        if (updatedAsset && updatedAsset.quantity <= 0) {
+            await Asset.findByIdAndUpdate(assetId, {
+                status: "EXPENDED",
+                condition: "UNSERVICEABLE",
+                quantity: 0,
+            });
+        }
+    }
+
+    const assetIdsToExpend = expenditure.assets.map((item) => item.asset._id);
     await Assignment.updateMany(
         {
-            asset: { $in: assetIdsToUpdate },
+            asset: { $in: assetIdsToExpend },
             status: "ACTIVE",
         },
         {
-            status: "EXPENDED", // todo: have to test, as just added expended enum
+            status: "EXPENDED",
             actualReturnDate: new Date(),
-            notes: `Asset expended - Expenditure ID: ${id}`,
+            notes: `Portion of asset expended - Expenditure ID: ${id}`,
         }
     );
 
@@ -379,7 +392,7 @@ export const completeExpenditure = asyncHandler(async (req, res) => {
         .populate("authorizedBy", "username fullname")
         .populate("approvedBy", "username fullname")
         .populate("completedBy", "username fullname")
-        .populate("assets");
+        .populate("assets.asset");
 
     return res.status(200).json({
         message: "Expenditure completed successfully",
@@ -440,7 +453,7 @@ export const cancelExpenditure = asyncHandler(async (req, res) => {
         .populate("authorizedBy", "username fullname")
         .populate("approvedBy", "username fullname")
         .populate("completedBy", "username fullname")
-        .populate("assets");
+        .populate("assets.asset");
 
     return res.status(200).json({
         message: "Expenditure cancelled successfully",
@@ -506,7 +519,7 @@ export const updateExpenditure = asyncHandler(async (req, res) => {
         .populate("authorizedBy", "username fullname")
         .populate("approvedBy", "username fullname")
         .populate("completedBy", "username fullname")
-        .populate("assets");
+        .populate("assets.asset");
 
     return res.status(200).json({
         message: "Expenditure updated successfully",

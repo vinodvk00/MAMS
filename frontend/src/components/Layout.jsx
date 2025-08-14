@@ -11,6 +11,7 @@ import {
     SafetyOutlined,
     TeamOutlined,
     ToolOutlined,
+    MinusCircleOutlined,
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -60,6 +61,11 @@ const Layout = ({ children }) => {
             key: 'bases',
             icon: <SafetyOutlined />,
             label: "Bases",
+        },
+        {
+            key: 'expenditures',
+            icon: <MinusCircleOutlined />, 
+            label: 'Expenditures',
         },
         {
             key: 'users',

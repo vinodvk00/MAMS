@@ -1,6 +1,6 @@
-import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import '@ant-design/v5-patch-for-react-19';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, Spin } from 'antd';
 import { antdTheme } from './theme/antdTheme';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
@@ -14,6 +14,7 @@ import Assignments from './pages/Assignments';
 import Equipments from './pages/Equipments';
 import Bases from './pages/Bases';
 import Users from './pages/Users';
+import Expenditures from './pages/Expenditures';
 
 const AppLayout = () => (
   <Layout>
@@ -26,6 +27,8 @@ const AppLayout = () => (
       <Route path="/equipments" element={<Equipments />} />
       <Route path="/bases" element={<Bases />} />
       <Route path="/users" element={<Users />} />
+      <Route path="/expenditures" element={<Expenditures />} />
+
       {/* Default route for authenticated users */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
@@ -33,7 +36,15 @@ const AppLayout = () => (
 );
 
 const AppContent = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <Routes>

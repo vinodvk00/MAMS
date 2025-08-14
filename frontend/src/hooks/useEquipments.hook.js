@@ -15,6 +15,11 @@ export const useEquipments = () => {
             setError(null);
         } catch (err) {
             setError(err);
+            message.error(
+                err.error?.message ||
+                    err.message ||
+                    "Failed to fetch equipment types"
+            );
         } finally {
             setLoading(false);
         }
@@ -33,6 +38,9 @@ export const useEquipments = () => {
             return true;
         } catch (err) {
             setError(err);
+            message.error(
+                err.error?.message || err.message || "Failed to add equipment"
+            );
             return false;
         } finally {
             setLoading(false);
@@ -46,10 +54,17 @@ export const useEquipments = () => {
             setEquipments((prev) =>
                 prev.map((e) => (e._id === id ? response.data : e))
             );
-            message.success(response.message || "Equipment updated successfully");
+            message.success(
+                response.message || "Equipment updated successfully"
+            );
             return true;
         } catch (err) {
             setError(err);
+            message.error(
+                err.error?.message ||
+                    err.message ||
+                    "Failed to update equipment"
+            );
             return false;
         } finally {
             setLoading(false);
@@ -65,6 +80,11 @@ export const useEquipments = () => {
             return true;
         } catch (err) {
             setError(err);
+            message.error(
+                err.error?.message ||
+                    err.message ||
+                    "Failed to delete equipment"
+            );
             return false;
         } finally {
             setLoading(false);

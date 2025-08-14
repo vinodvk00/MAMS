@@ -49,8 +49,15 @@ const expenditureSchema = new Schema(
         },
         assets: [
             {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Asset",
+                asset: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Asset",
+                },
+                quantity: {
+                    type: Number,
+                    required: true,
+                    min: 1,
+                },
             },
         ],
         status: {

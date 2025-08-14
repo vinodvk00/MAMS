@@ -69,6 +69,11 @@ const Assets = () => {
             dataIndex: ['equipmentType', 'name'],
             key: 'equipmentType',
             sorter: (a, b) => a.equipmentType.name.localeCompare(b.equipmentType.name),
+        }, {
+            title: 'Quantity',
+            dataIndex: 'quantity',
+            key: 'quantity',
+            sorter: (a, b) => a.quantity.localeCompare(b.quantity),
         },
         {
             title: 'Base',

@@ -128,6 +128,14 @@ export const assignmentsAPI = {
         api.patch(`/assignment/mark-lost-damaged/${id}`, data),
 };
 
+export const expendituresAPI = {
+    getAll: () => api.get("/expenditure/"),
+    create: (data) => api.post("/expenditure/create", data),
+    approve: (id) => api.patch(`/expenditure/approve/${id}`),
+    complete: (id) => api.patch(`/expenditure/complete/${id}`),
+    cancel: (id, data) => api.patch(`/expenditure/cancel/${id}`, data),
+};
+
 export const userAPI = {
     getAll: () => api.get("/user"),
     create: (data) => api.post("/user/register", data),

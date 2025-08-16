@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { userAPI, basesAPI } from "../services/api";
 import { message } from "antd";
+import { useAuth } from "../context/AuthContext";
 
 export const useUsers = () => {
     const [users, setUsers] = useState([]);
@@ -8,28 +9,40 @@ export const useUsers = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const { user } = useAuth();
+
     const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await userAPI.getAll();
+            let response;
+            if (user?.role === "admin") {
+                response = await userAPI.getAll();
+            } else if (user?.role === "base_commander") {
+                response = await userAPI.getByBase();
+            } else {
+                setUsers([]);
+                return;
+            }
             setUsers(response.data || []);
             setError(null);
         } catch (err) {
             setError(err);
-            message.error(err.message || 'Failed to fetch users');
+            message.error(err.message || "Failed to fetch users");
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [user]);
 
     const fetchBases = useCallback(async () => {
-        try {
-            const response = await basesAPI.getAll();
-            setBases(response.data || []);
-        } catch (err) {
-            message.error(err.message || 'Failed to fetch bases');
+        if (user?.role === "admin") {
+            try {
+                const response = await basesAPI.getAll();
+                setBases(response.data || []);
+            } catch (err) {
+                message.error(err.message || "Failed to fetch bases");
+            }
         }
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         fetchUsers();
@@ -45,7 +58,7 @@ export const useUsers = () => {
             return true;
         } catch (err) {
             setError(err);
-            message.error(err.message || 'Failed to add user');
+            message.error(err.message || "Failed to add user");
             return false;
         } finally {
             setLoading(false);
@@ -61,7 +74,7 @@ export const useUsers = () => {
             return true;
         } catch (err) {
             setError(err);
-            message.error(err.message || 'Failed to update user');
+            message.error(err.message || "Failed to update user");
             return false;
         } finally {
             setLoading(false);
@@ -77,7 +90,7 @@ export const useUsers = () => {
             return true;
         } catch (err) {
             setError(err);
-            message.error(err.message || 'Failed to delete user');
+            message.error(err.message || "Failed to delete user");
             return false;
         } finally {
             setLoading(false);
@@ -88,12 +101,14 @@ export const useUsers = () => {
         try {
             setLoading(true);
             const response = await userAPI.changeRole(id, role);
-            message.success(response.message || "User role changed successfully");
+            message.success(
+                response.message || "User role changed successfully"
+            );
             fetchUsers();
             return true;
         } catch (err) {
             setError(err);
-            message.error(err.message || 'Failed to change user role');
+            message.error(err.message || "Failed to change user role");
             return false;
         } finally {
             setLoading(false);

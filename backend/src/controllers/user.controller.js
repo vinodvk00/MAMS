@@ -28,7 +28,7 @@ export const registerUser = async (req, res) => {
             password,
             fullname,
             role: role || "user",
-            assignedBase: role === "base_commander" ? assignedBase : null,
+            assignedBase: assignedBase,
         });
 
         const createdUser = await User.findById(newUser._id).select(
@@ -441,6 +441,24 @@ export const getUserById = async (req, res) => {
         data: user,
     });
 };
+
+export const getUsersByBase = asyncHandler(async (req, res) => {
+    let filter = {};
+
+    if (req.user.role === "base_commander") {
+        filter.assignedBase = req.user.assignedBase;
+    }
+
+    const users = await User.find(filter)
+        .select("-password -refreshToken")
+        .populate("assignedBase", "name");
+
+    return res.status(200).json({
+        message: "Users retrieved successfully",
+        status: "success",
+        data: users,
+    });
+});
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {

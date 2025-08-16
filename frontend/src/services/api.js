@@ -138,6 +138,7 @@ export const expendituresAPI = {
 
 export const userAPI = {
     getAll: () => api.get("/user"),
+    getByBase: () => api.get("/user/base"),
     create: (data) => api.post("/user/register", data),
     update: (id, data) => api.patch(`/user/${id}`, data),
     delete: (id) => api.delete(`/user/${id}`),

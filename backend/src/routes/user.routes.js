@@ -1,9 +1,11 @@
 import { Router } from "express";
 import {
     changeRole,
+    deleteUser,
     getAllUsers,
     getOAuth2Token,
     getUserById,
+    getUsersByBase,
     loginUser,
     logoutUser,
     makeCommander,
@@ -12,7 +14,11 @@ import {
     removeCommander,
     updateUser,
 } from "../controllers/user.controller.js";
-import { adminOnly, verifyJWT } from "../middlewares/auth.middleware.js";
+import {
+    adminOnly,
+    baseComanderOnly,
+    verifyJWT,
+} from "../middlewares/auth.middleware.js";
 import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const userRouter = Router();
@@ -474,7 +480,7 @@ userRouter.get("/logout", verifyJWT, logApiRequest("LOGOUT"), logoutUser);
 userRouter.patch(
     "/:userId",
     verifyJWT,
-    adminOnly,
+    baseComanderOnly,
     logApiRequest("USER_UPDATE"),
     updateUser
 );
@@ -618,6 +624,8 @@ userRouter.post("/register-commander", verifyJWT, adminOnly, registerCommander);
  *         $ref: '#/components/responses/ForbiddenError'
  */
 userRouter.get("/", verifyJWT, adminOnly, getAllUsers);
+
+userRouter.get("/base", verifyJWT, baseComanderOnly, getUsersByBase);
 
 /**
  * @swagger
@@ -850,5 +858,7 @@ userRouter.get(
     adminOnly,
     removeCommander
 );
+
+userRouter.delete("/:userId", verifyJWT, adminOnly, deleteUser);
 
 export default userRouter;

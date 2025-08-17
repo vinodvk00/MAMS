@@ -1,108 +1,71 @@
 import { Transfer } from "../models/transfer.models.js";
 import { Asset } from "../models/asset.models.js";
 import { Base } from "../models/base.models.js";
-import { EquipmentType } from "../models/equipmentType.models.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
 
 export const initiateTransfer = asyncHandler(async (req, res) => {
-    const {
-        fromBaseId,
-        toBaseId,
-        equipmentTypeId,
-        totalQuantity,
-        transportDetails,
-        notes,
-    } = req.body;
+    const { fromBaseId, toBaseId, assetId, quantity, transportDetails, notes } =
+        req.body;
 
-    if (!fromBaseId || !toBaseId || !equipmentTypeId || !totalQuantity) {
+    if (!fromBaseId || !toBaseId || !assetId || !quantity) {
         return res.status(400).json({
-            message:
-                "fromBaseId, toBaseId, equipmentTypeId and totalQuantity are required fields",
+            message: "fromBaseId, toBaseId, assetId and quantity are required",
             status: "error",
         });
     }
 
-    if (fromBaseId === toBaseId) {
+    const sourceAsset = await Asset.findById(assetId);
+    if (!sourceAsset) {
+        return res
+            .status(404)
+            .json({ message: "Source asset not found", status: "error" });
+    }
+
+    if (sourceAsset.status !== "AVAILABLE") {
+        return res
+            .status(400)
+            .json({
+                message: "Asset is not available for transfer",
+                status: "error",
+            });
+    }
+
+    if (sourceAsset.quantity < quantity) {
         return res.status(400).json({
-            message: "Source and destination bases cannot be the same",
+            message: `Insufficient quantity. Available: ${sourceAsset.quantity}, Requested: ${quantity}`,
             status: "error",
         });
     }
 
-    const userBaseId = req.user.assignedBase?.toString();
-    if (req.user.role === "base_commander" && fromBaseId !== userBaseId) {
-        return res.status(403).json({
-            message:
-                "Base commanders can only initiate transfers from their assigned base",
-            status: "error",
-        });
+    // Decrement quantity from the source asset
+    sourceAsset.quantity -= quantity;
+    if (sourceAsset.quantity === 0) {
+        // Optionally delete the asset if its quantity becomes zero
+        await Asset.findByIdAndDelete(assetId);
+    } else {
+        await sourceAsset.save();
     }
 
-    const [fromBase, toBase, equipmentType] = await Promise.all([
-        Base.findById(fromBaseId),
-        Base.findById(toBaseId),
-        EquipmentType.findById(equipmentTypeId),
-    ]);
-
-    if (!fromBase || !toBase || !equipmentType) {
-        return res.status(404).json({
-            message: "Invalid base or equipment type",
-            status: "error",
-        });
-    }
-
-    const availableAssets = await Asset.find({
-        currentBase: fromBaseId,
-        equipmentType: equipmentTypeId,
-        status: "AVAILABLE",
-    }).sort({ createdAt: 1 });
-
-    const totalAvailableQuantity = availableAssets.reduce(
-        (sum, asset) => sum + asset.quantity,
-        0
-    );
-
-    if (totalAvailableQuantity < totalQuantity) {
-        return res.status(400).json({
-            message: `Insufficient assets available. Requested: ${totalQuantity}, Available: ${totalAvailableQuantity}`,
-            status: "error",
-        });
-    }
-
+    // Create a new temporary asset for the transfer
     const inTransitAsset = await Asset.create({
-        equipmentType: equipmentTypeId,
+        equipmentType: sourceAsset.equipmentType,
         currentBase: fromBaseId,
         status: "IN_TRANSIT",
-        condition: "GOOD",
-        quantity: totalQuantity,
+        condition: sourceAsset.condition,
+        quantity: quantity,
         serialNumber: `TRANSIT-${new mongoose.Types.ObjectId().toString().slice(-6)}`,
     });
-
-    let remainingToDecrement = totalQuantity;
-    for (const asset of availableAssets) {
-        if (remainingToDecrement <= 0) break;
-
-        const quantityToTake = Math.min(asset.quantity, remainingToDecrement);
-        asset.quantity -= quantityToTake;
-        remainingToDecrement -= quantityToTake;
-
-        if (asset.quantity <= 0) {
-            await Asset.findByIdAndDelete(asset._id);
-        } else {
-            await asset.save();
-        }
-    }
 
     const newTransfer = await Transfer.create({
         fromBase: fromBaseId,
         toBase: toBaseId,
-        equipmentType: equipmentTypeId,
-        assets: [{ asset: inTransitAsset._id, quantity: totalQuantity }],
-        totalQuantity,
+        equipmentType: sourceAsset.equipmentType,
+        assets: [{ asset: inTransitAsset._id, quantity: quantity }],
+        totalQuantity: quantity,
         status: "INITIATED",
         initiatedBy: req.user._id,
-        transportDetails: transportDetails || "No transport details provided",
+        transportDetails,
         notes,
     });
 
@@ -129,12 +92,12 @@ export const initiateTransfer = asyncHandler(async (req, res) => {
 export const completeTransfer = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const transfer = await Transfer.findById(id).populate("assets.asset");
+
     if (!transfer) {
         return res
             .status(404)
             .json({ message: "Transfer not found", status: "error" });
     }
-
     if (transfer.status !== "IN_TRANSIT") {
         return res.status(400).json({
             message: `Transfer cannot be completed. Current status: ${transfer.status}`,
@@ -142,23 +105,12 @@ export const completeTransfer = asyncHandler(async (req, res) => {
         });
     }
 
-    const inTransitAsset = transfer.assets[0].asset;
+    const assetToUpdate = transfer.assets[0].asset;
 
-    const existingAssetAtDest = await Asset.findOne({
+    await Asset.findByIdAndUpdate(assetToUpdate._id, {
         currentBase: transfer.toBase,
-        equipmentType: transfer.equipmentType,
         status: "AVAILABLE",
     });
-
-    if (existingAssetAtDest) {
-        existingAssetAtDest.quantity += inTransitAsset.quantity;
-        await existingAssetAtDest.save();
-        await Asset.findByIdAndDelete(inTransitAsset._id);
-    } else {
-        inTransitAsset.currentBase = transfer.toBase;
-        inTransitAsset.status = "AVAILABLE";
-        await inTransitAsset.save();
-    }
 
     const updatedTransfer = await Transfer.findByIdAndUpdate(
         id,
@@ -167,7 +119,7 @@ export const completeTransfer = asyncHandler(async (req, res) => {
             completionDate: new Date(),
         },
         { new: true }
-    ).populate(/* ... */);
+    ).populate(/* your populate fields */);
 
     res.locals.data = updatedTransfer;
     res.locals.model = "Transfer";

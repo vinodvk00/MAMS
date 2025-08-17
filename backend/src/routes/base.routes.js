@@ -10,6 +10,7 @@ import {
 import {
     adminOnly,
     baseComanderOnly,
+    officerOnly,
     verifyJWT,
 } from "../middlewares/auth.middleware.js";
 import { logApiRequest } from "../middlewares/apiLog.middleware.js";
@@ -17,6 +18,8 @@ import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 const baseRouter = Router();
 
 baseRouter.use(verifyJWT);
+
+baseRouter.get("/", officerOnly, getAllBases);
 
 baseRouter.get(
     "/commander/:commanderId",
@@ -113,7 +116,6 @@ baseRouter.use(adminOnly);
  *                 error:
  *                   type: string
  */
-baseRouter.get("/", getAllBases);
 
 /**
  * @swagger

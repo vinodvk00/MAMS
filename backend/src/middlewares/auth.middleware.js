@@ -81,7 +81,7 @@ export const verifyJWT = async (req, res, next) => {
                     status: "error",
                 });
             }
-        } 
+        }
     }
 
     if (!user && token) {
@@ -134,6 +134,21 @@ export const logisticsOfficerOnly = (req, res, next) => {
     if (req.user?.role !== "logistics_officer" && req.user?.role !== "admin") {
         return res.status(403).json({
             message: "Access denied. Logistics Officers only.",
+            status: "error",
+        });
+    }
+
+    next();
+};
+
+export const officerOnly = (req, res, next) => {
+    if (
+        req.user?.role !== "logistics_officer" &&
+        req.user?.role !== "base_commander" &&
+        req.user?.role !== "admin"
+    ) {
+        return res.status(403).json({
+            message: "Access denied. Officers only.",
             status: "error",
         });
     }

@@ -115,6 +115,7 @@ export const baseAPI = {
 export const transfersAPI = {
     getAll: () => api.get("/transfer/"),
     getById: (id) => api.get(`/transfer/${id}`),
+    getByBase: () => api.get("/transfer/base"),
     initiate: (data) => api.post("/transfer/initiate", data),
     approve: (id) => api.patch(`/transfer/approve/${id}`),
     complete: (id) => api.patch(`/transfer/complete/${id}`),

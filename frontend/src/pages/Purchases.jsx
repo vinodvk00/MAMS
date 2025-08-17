@@ -1,29 +1,28 @@
-import { useState, useEffect } from "react";
-import {
-    Table,
-    Button,
-    Modal,
-    Form,
-    Space,
-    Tag,
-    App
-} from "antd";
+// frontend/src/pages/Purchases.jsx
+import { useState } from "react";
+import { Table, Button, Modal, Form, Space, Tag, App } from "antd";
 import {
     PlusOutlined,
     EditOutlined,
     DeleteOutlined,
     EyeOutlined,
 } from "@ant-design/icons";
-import { purchasesAPI, basesAPI, equipmentTypesAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { usePurchases } from "../hooks/usePurchases.hook";
 import PurchaseForm from "../components/purchases/PurchaseForm";
 import dayjs from "dayjs";
 
 const PurchasesContent = () => {
-    const [purchases, setPurchases] = useState([]);
-    const [bases, setBases] = useState([]);
-    const [equipmentTypes, setEquipmentTypes] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const {
+        purchases,
+        bases,
+        equipmentTypes,
+        loading,
+        addPurchase,
+        updatePurchase,
+        deletePurchase,
+    } = usePurchases();
+
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingPurchase, setEditingPurchase] = useState(null);
     const [viewingPurchase, setViewingPurchase] = useState(null);
@@ -31,39 +30,8 @@ const PurchasesContent = () => {
     const { user } = useAuth();
     const { message: messageApi } = App.useApp();
 
-
     const canManagePurchases =
         user?.role === "admin" || user?.role === "logistics_officer";
-
-    const fetchPurchases = async () => {
-        setLoading(true);
-        try {
-            const response = await purchasesAPI.getAll();
-            setPurchases(response.data);
-        } catch (error) {
-            messageApi.error(error.message || "Failed to fetch purchases");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchDropdownData = async () => {
-        try {
-            const [basesRes, equipmentTypesRes] = await Promise.all([
-                basesAPI.getAll(),
-                equipmentTypesAPI.getAll(),
-            ]);
-            setBases(basesRes.data);
-            setEquipmentTypes(equipmentTypesRes.data);
-        } catch (error) {
-            messageApi.error("Failed to fetch data for form");
-        }
-    };
-
-    useEffect(() => {
-        fetchPurchases();
-        fetchDropdownData();
-    }, []);
 
     const showModal = (purchase = null) => {
         setEditingPurchase(purchase);
@@ -85,7 +53,7 @@ const PurchasesContent = () => {
         setIsModalVisible(true);
     };
 
-    const showViewModal = (purchase) => {
+    const showViewModal = purchase => {
         setViewingPurchase(purchase);
     };
 
@@ -99,87 +67,74 @@ const PurchasesContent = () => {
         try {
             const values = await form.validateFields();
             if (editingPurchase) {
-                await purchasesAPI.update(editingPurchase._id, values);
-                messageApi.success("Purchase updated successfully");
+                await updatePurchase(editingPurchase._id, values);
             } else {
-                await purchasesAPI.create(values);
-                messageApi.success("Purchase created successfully");
+                await addPurchase(values);
             }
-            fetchPurchases();
             handleCancel();
         } catch (error) {
             messageApi.error(error.message || "Failed to save purchase");
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = async id => {
         Modal.confirm({
-            title: 'Are you sure you want to delete this purchase?',
-            content: 'This action cannot be undone.',
-            okText: 'Yes, delete it',
-            okType: 'danger',
-            cancelText: 'No',
+            title: "Are you sure you want to delete this purchase?",
+            content: "This action cannot be undone.",
+            okText: "Yes, delete it",
+            okType: "danger",
+            cancelText: "No",
             onOk: async () => {
-                try {
-                    await purchasesAPI.delete(id);
-                    messageApi.success("Purchase deleted successfully");
-                    fetchPurchases();
-                } catch (error) {
-                    messageApi.error(error.message || "Failed to delete purchase");
-                }
+                await deletePurchase(id);
             },
         });
     };
 
-    const getStatusColor = (status) => {
+    const getStatusColor = status => {
         switch (status) {
-            case 'ORDERED':
-                return 'blue';
-            case 'DELIVERED':
-                return 'green';
-            case 'CANCELLED':
-                return 'red';
+            case "ORDERED":
+                return "blue";
+            case "DELIVERED":
+                return "green";
+            case "CANCELLED":
+                return "red";
             default:
-                return 'default';
+                return "default";
         }
     };
 
     const columns = [
         {
-            title: "ID",
-            dataIndex: "_id",
-            key: "_id",
-        },
-        {
             title: "Equipment Type",
-            dataIndex: "equipmentType",
+            dataIndex: ["equipmentType", "name"],
             key: "equipmentType",
-            render: (equipmentType) => equipmentType?.name || "N/A",
         },
         {
             title: "Base",
-            dataIndex: "base",
+            dataIndex: ["base", "name"],
             key: "base",
-            render: (base) => base?.name || "N/A",
         },
         { title: "Quantity", dataIndex: "quantity", key: "quantity" },
         {
             title: "Total Amount",
             dataIndex: "totalAmount",
             key: "totalAmount",
-            render: (amount) => `$${amount?.toFixed(2)}`,
+            render: amount => `$${amount?.toFixed(2)}`,
         },
         {
             title: "Purchase Date",
             dataIndex: "purchaseDate",
             key: "purchaseDate",
-            render: (date) => date ? new Date(date).toLocaleDateString() : 'N/A',
+            render: date =>
+                date ? new Date(date).toLocaleDateString() : "N/A",
         },
         {
             title: "Status",
             dataIndex: "status",
             key: "status",
-            render: (status) => <Tag color={getStatusColor(status)}>{status}</Tag>,
+            render: status => (
+                <Tag color={getStatusColor(status)}>{status}</Tag>
+            ),
         },
         {
             title: "Actions",
@@ -212,10 +167,10 @@ const PurchasesContent = () => {
         <div>
             {canManagePurchases && (
                 <Button
-                    type="primary"
+                    type='primary'
                     icon={<PlusOutlined />}
                     onClick={() => showModal()}
-                    style={{ marginBottom: 16, float: 'right' }}
+                    style={{ marginBottom: 16, float: "right" }}
                 >
                     Add Purchase
                 </Button>
@@ -224,7 +179,7 @@ const PurchasesContent = () => {
                 columns={columns}
                 dataSource={purchases}
                 loading={loading}
-                rowKey="_id"
+                rowKey='_id'
                 scroll={{ x: true }}
             />
 
@@ -235,11 +190,16 @@ const PurchasesContent = () => {
                 onCancel={handleCancel}
                 width={600}
             >
-                <PurchaseForm form={form} bases={bases} equipmentTypes={equipmentTypes} isEditing={!!editingPurchase} />
+                <PurchaseForm
+                    form={form}
+                    bases={bases}
+                    equipmentTypes={equipmentTypes}
+                    isEditing={!!editingPurchase}
+                />
             </Modal>
 
             <Modal
-                title="Purchase Details"
+                title='Purchase Details'
                 open={!!viewingPurchase}
                 onCancel={() => setViewingPurchase(null)}
                 footer={null}
@@ -247,13 +207,15 @@ const PurchasesContent = () => {
                 {viewingPurchase && (
                     <div>
                         <p>
-                            <strong>Equipment:</strong> {viewingPurchase.equipmentType?.name}
+                            <strong>Equipment:</strong>{" "}
+                            {viewingPurchase.equipmentType?.name}
                         </p>
                         <p>
                             <strong>Base:</strong> {viewingPurchase.base?.name}
                         </p>
                         <p>
-                            <strong>Quantity:</strong> {viewingPurchase.quantity}
+                            <strong>Quantity:</strong>{" "}
+                            {viewingPurchase.quantity}
                         </p>
                         <p>
                             <strong>Unit Price:</strong> $
@@ -265,20 +227,33 @@ const PurchasesContent = () => {
                         </p>
                         <p>
                             <strong>Purchase Date:</strong>{" "}
-                            {viewingPurchase.purchaseDate ? new Date(viewingPurchase.purchaseDate).toLocaleDateString() : 'N/A'}
+                            {viewingPurchase.purchaseDate
+                                ? new Date(
+                                      viewingPurchase.purchaseDate
+                                  ).toLocaleDateString()
+                                : "N/A"}
                         </p>
                         <p>
                             <strong>Delivery Date:</strong>{" "}
-                            {viewingPurchase.deliveryDate ? new Date(viewingPurchase.deliveryDate).toLocaleDateString() : 'N/A'}
+                            {viewingPurchase.deliveryDate
+                                ? new Date(
+                                      viewingPurchase.deliveryDate
+                                  ).toLocaleDateString()
+                                : "N/A"}
                         </p>
                         <p>
-                            <strong>Status:</strong> <Tag color={getStatusColor(viewingPurchase.status)}>{viewingPurchase.status}</Tag>
+                            <strong>Status:</strong>{" "}
+                            <Tag color={getStatusColor(viewingPurchase.status)}>
+                                {viewingPurchase.status}
+                            </Tag>
                         </p>
                         <p>
-                            <strong>Supplier:</strong> {viewingPurchase.supplier?.name || 'N/A'}
+                            <strong>Supplier:</strong>{" "}
+                            {viewingPurchase.supplier?.name || "N/A"}
                         </p>
                         <p>
-                            <strong>Notes:</strong> {viewingPurchase.notes || 'N/A'}
+                            <strong>Notes:</strong>{" "}
+                            {viewingPurchase.notes || "N/A"}
                         </p>
                     </div>
                 )}
@@ -286,7 +261,6 @@ const PurchasesContent = () => {
         </div>
     );
 };
-
 
 const Purchases = () => (
     <App>

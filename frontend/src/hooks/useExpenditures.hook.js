@@ -5,7 +5,8 @@ import {
     equipmentTypesAPI,
     assetsAPI,
 } from "../services/api";
-import { message } from "antd";
+import { App } from "antd";
+import { useAuth } from "../context/AuthContext";
 
 export const useExpenditures = () => {
     const [expenditures, setExpenditures] = useState([]);
@@ -14,16 +15,24 @@ export const useExpenditures = () => {
     const [assets, setAssets] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const { user } = useAuth();
+    const { message: messageApi } = App.useApp();
 
     const fetchData = useCallback(async () => {
+        if (!user) return;
         setLoading(true);
         try {
+            const assetRequest =
+                user.role === "admin" || user.role === "logistics_officer"
+                    ? assetsAPI.getAll()
+                    : assetsAPI.getByBase();
+
             const [expendituresRes, basesRes, equipmentTypesRes, assetsRes] =
                 await Promise.all([
                     expendituresAPI.getAll(),
                     basesAPI.getAll(),
                     equipmentTypesAPI.getAll(),
-                    assetsAPI.getAll(),
+                    assetRequest,
                 ]);
             setExpenditures(expendituresRes.data);
             setBases(basesRes.data);
@@ -32,11 +41,11 @@ export const useExpenditures = () => {
             setError(null);
         } catch (err) {
             setError(err);
-            message.error(err.message || "Failed to fetch expenditure data");
+            messageApi.error(err.message || "Failed to fetch expenditure data");
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [user, messageApi]);
 
     useEffect(() => {
         fetchData();
@@ -46,14 +55,14 @@ export const useExpenditures = () => {
         try {
             setLoading(true);
             const response = await expendituresAPI.create(expenditureData);
-            message.success(
+            messageApi.success(
                 response.message || "Expenditure created successfully"
             );
             fetchData();
             return true;
         } catch (err) {
             setError(err);
-            message.error(err.message || "Failed to create expenditure");
+            messageApi.error(err.message || "Failed to create expenditure");
             return false;
         } finally {
             setLoading(false);
@@ -64,14 +73,14 @@ export const useExpenditures = () => {
         try {
             setLoading(true);
             const response = await expendituresAPI.approve(id);
-            message.success(
+            messageApi.success(
                 response.message || "Expenditure approved successfully"
             );
             fetchData();
             return true;
         } catch (err) {
             setError(err);
-            message.error(err.message || "Failed to approve expenditure");
+            messageApi.error(err.message || "Failed to approve expenditure");
             return false;
         } finally {
             setLoading(false);
@@ -82,14 +91,14 @@ export const useExpenditures = () => {
         try {
             setLoading(true);
             const response = await expendituresAPI.complete(id);
-            message.success(
+            messageApi.success(
                 response.message || "Expenditure completed successfully"
             );
             fetchData();
             return true;
         } catch (err) {
             setError(err);
-            message.error(err.message || "Failed to complete expenditure");
+            messageApi.error(err.message || "Failed to complete expenditure");
             return false;
         } finally {
             setLoading(false);
@@ -100,14 +109,14 @@ export const useExpenditures = () => {
         try {
             setLoading(true);
             const response = await expendituresAPI.cancel(id, { reason });
-            message.success(
+            messageApi.success(
                 response.message || "Expenditure cancelled successfully"
             );
             fetchData();
             return true;
         } catch (err) {
             setError(err);
-            message.error(err.message || "Failed to cancel expenditure");
+            messageApi.error(err.message || "Failed to cancel expenditure");
             return false;
         } finally {
             setLoading(false);

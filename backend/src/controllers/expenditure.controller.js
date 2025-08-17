@@ -8,124 +8,69 @@ import mongoose from "mongoose";
 
 export const createExpenditure = asyncHandler(async (req, res) => {
     const {
-        equipmentType,
+        assetId,
         base,
         quantity,
         expenditureDate,
         reason,
-        assetIds,
         operationDetails,
         notes,
     } = req.body;
 
-    if (!equipmentType || !base || !quantity || !reason) {
+    if (!assetId || !base || !quantity || !reason) {
         return res.status(400).json({
-            message:
-                "equipmentType, base, quantity and reason are required fields",
+            message: "assetId, base, quantity and reason are required fields",
             status: "error",
         });
     }
 
-    if (req.user.role === "base_commander") {
-        const userBaseId = req.user.assignedBase?.toString();
-        if (base !== userBaseId) {
-            return res.status(403).json({
-                message:
-                    "Base commanders can only create expenditures for their assigned base",
-                status: "error",
-            });
-        }
-    }
-
-    const [baseDoc, equipmentTypeDoc] = await Promise.all([
-        Base.findById(base),
-        EquipmentType.findById(equipmentType),
-    ]);
-
-    if (!baseDoc) {
-        return res
-            .status(404)
-            .json({ message: "Base not found", status: "error" });
-    }
-
-    if (!equipmentTypeDoc) {
-        return res
-            .status(404)
-            .json({ message: "Equipment type not found", status: "error" });
-    }
-
-    let expenditureAssets = [];
-    let totalAvailableQuantity = 0;
-
-    if (assetIds && assetIds.length > 0) {
-        const assets = await Asset.find({
-            _id: { $in: assetIds },
-            currentBase: base,
-            equipmentType: equipmentType,
-            status: "AVAILABLE",
-        });
-
-        if (assets.length !== assetIds.length) {
-            return res.status(400).json({
-                message:
-                    "Some specified assets are not found or not available at the specified base",
-                status: "error",
-            });
-        }
-
-        expenditureAssets = assets.map((asset) => ({
-            asset: asset._id,
-            quantity: 1,
-        }));
-        totalAvailableQuantity = assets.length;
-    } else {
-        const availableAssets = await Asset.find({
-            currentBase: base,
-            equipmentType: equipmentType,
-            status: "AVAILABLE",
-        }).sort({ createdAt: 1 });
-
-        if (availableAssets.length === 0) {
-            return res.status(400).json({
-                message:
-                    "No assets of this equipment type available at the specified base",
-                status: "error",
-            });
-        }
-
-        let remainingQuantity = quantity;
-        for (const asset of availableAssets) {
-            if (remainingQuantity <= 0) break;
-
-            const assetQty = asset.quantity || 1;
-            const expendQty = Math.min(assetQty, remainingQuantity);
-
-            expenditureAssets.push({ asset: asset._id, quantity: expendQty });
-            totalAvailableQuantity += expendQty;
-            remainingQuantity -= expendQty;
-        }
-    }
-
-    if (totalAvailableQuantity < quantity) {
-        return res.status(400).json({
-            message: `Insufficient assets available. Requested: ${quantity}, Available: ${totalAvailableQuantity}`,
+    const userBaseId = req.user.assignedBase?.toString();
+    if (req.user.role === "base_commander" && base !== userBaseId) {
+        return res.status(403).json({
+            message: "Base commanders can only create expenditures for their assigned base",
             status: "error",
         });
     }
+
+    const asset = await Asset.findById(assetId);
+    if (!asset) {
+        return res.status(404).json({ message: "Asset not found", status: "error" });
+    }
+
+    if (asset.currentBase.toString() !== base) {
+        return res.status(400).json({ message: "Asset does not belong to the specified base", status: "error" });
+    }
+    
+    if (asset.status !== "AVAILABLE") {
+        return res.status(400).json({ message: "Asset is not available for expenditure", status: "error" });
+    }
+
+    if (asset.quantity < quantity) {
+        return res.status(400).json({
+            message: `Insufficient quantity. Available: ${asset.quantity}, Requested: ${quantity}`,
+            status: "error",
+        });
+    }
+
+    asset.quantity -= quantity;
+    if (asset.quantity === 0) {
+        asset.status = "EXPENDED";
+    }
+    await asset.save();
 
     const newExpenditure = await Expenditure.create({
-        equipmentType,
+        equipmentType: asset.equipmentType,
         base,
         quantity,
         expenditureDate: expenditureDate || new Date(),
         reason,
-        assets: expenditureAssets,
+        assets: [{ asset: asset._id, quantity }],
         status: "PENDING",
         authorizedBy: req.user._id,
         operationDetails,
         notes,
     });
-
+    
     const populatedExpenditure = await Expenditure.findById(newExpenditure._id)
         .populate("equipmentType", "name category code")
         .populate("base", "name code location")

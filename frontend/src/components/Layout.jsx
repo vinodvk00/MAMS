@@ -61,12 +61,12 @@ const Layout = ({ children }) => {
             icon: <TeamOutlined />,
             label: "Assignments",
         },
-        {
+        user?.role === "admin" && {
             key: "equipments",
             icon: <ToolOutlined />,
             label: "Equipments",
         },
-        {
+        user?.role === "admin" && {
             key: "bases",
             icon: <SafetyOutlined />,
             label: "Bases",
@@ -137,8 +137,8 @@ const Layout = ({ children }) => {
                 trigger={null}
                 collapsible
                 collapsed={collapsed}
-                width={260}
-                collapsedWidth={80}
+                width={240}
+                collapsedWidth={64}
                 style={{
                     background: "#0f0f0f",
                     borderRight: "1px solid #3a3a3a",
@@ -157,24 +157,25 @@ const Layout = ({ children }) => {
                         height: "100%",
                     }}
                 >
-                    {/* Logo Section */}
                     <div
                         style={{
-                            padding: collapsed ? "20px 8px" : "20px 16px",
+                            padding: "0px 16px",
                             borderBottom: "1px solid #3a3a3a",
                             background:
                                 "linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 66, 0.05))",
                             display: "flex",
                             alignItems: "center",
+                            // justifyContent: collapsed ? "center" : "flex-start",
                             justifyContent: "center",
-                            gap: "12px",
-                            minHeight: "60px",
+                            gap: collapsed ? "0" : "12px",
+                            height: "64px",
+                            boxSizing: "border-box",
                         }}
                     >
                         <div
                             style={{
-                                width: collapsed ? "32px" : "40px",
-                                height: collapsed ? "32px" : "40px",
+                                width: "28px",
+                                height: "28px",
                                 background:
                                     "linear-gradient(135deg, #ff6b35, #ff8c42)",
                                 borderRadius: "8px",
@@ -187,13 +188,20 @@ const Layout = ({ children }) => {
                         >
                             <SafetyOutlined
                                 style={{
-                                    fontSize: collapsed ? "18px" : "22px",
+                                    fontSize: "18px",
                                     color: "#fff",
                                 }}
                             />
                         </div>
                         {!collapsed && (
-                            <div style={{ minWidth: 0 }}>
+                            <div
+                                style={{
+                                    minWidth: 0,
+                                    overflow: "hidden",
+                                    display: "flex",
+                                    alignItems: "center",
+                                }}
+                            >
                                 <div
                                     style={{
                                         color: "#ff6b35",
@@ -206,20 +214,11 @@ const Layout = ({ children }) => {
                                 >
                                     MAMS
                                 </div>
-                                <div
-                                    style={{
-                                        color: "#6a6a6a",
-                                        fontSize: "10px",
-                                        letterSpacing: "0.5px",
-                                        marginTop: "4px",
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    ASSET MANAGEMENT
-                                </div>
                             </div>
                         )}
                     </div>
+
+                    {/* Menu Container */}
                     <div
                         style={{
                             flexGrow: 1,
@@ -227,8 +226,6 @@ const Layout = ({ children }) => {
                             overflowX: "hidden",
                         }}
                     >
-                        {/* Menu Container */}
-
                         <Menu
                             theme='dark'
                             mode='inline'
@@ -247,7 +244,7 @@ const Layout = ({ children }) => {
                     <div
                         style={{
                             borderTop: "1px solid #3a3a3a",
-                            padding: "12px",
+                            padding: "16px",
                             display: "flex",
                             justifyContent: "center",
                             background: "#0f0f0f",
@@ -265,7 +262,7 @@ const Layout = ({ children }) => {
                             onClick={() => setCollapsed(!collapsed)}
                             style={{
                                 fontSize: "16px",
-                                width: collapsed ? "48px" : "100%",
+                                width: collapsed ? "32px" : "100%",
                                 height: "36px",
                                 color: "#b0b0b0",
                                 display: "flex",
@@ -299,7 +296,7 @@ const Layout = ({ children }) => {
 
             <AntLayout
                 style={{
-                    marginLeft: collapsed ? 80 : 260,
+                    marginLeft: collapsed ? 64 : 240,
                     transition: "margin-left 0.2s",
                     background: "#1a1a1a",
                     minHeight: "100vh",

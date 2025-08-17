@@ -23,12 +23,10 @@ export const initiateTransfer = asyncHandler(async (req, res) => {
     }
 
     if (sourceAsset.status !== "AVAILABLE") {
-        return res
-            .status(400)
-            .json({
-                message: "Asset is not available for transfer",
-                status: "error",
-            });
+        return res.status(400).json({
+            message: "Asset is not available for transfer",
+            status: "error",
+        });
     }
 
     if (sourceAsset.quantity < quantity) {
@@ -54,13 +52,14 @@ export const initiateTransfer = asyncHandler(async (req, res) => {
         status: "IN_TRANSIT",
         condition: sourceAsset.condition,
         quantity: quantity,
-        serialNumber: `TRANSIT-${new mongoose.Types.ObjectId().toString().slice(-6)}`,
+        serialNumber: `transfer-${new mongoose.Types.ObjectId().toString().slice(-6)}`,
     });
 
     const newTransfer = await Transfer.create({
         fromBase: fromBaseId,
         toBase: toBaseId,
         equipmentType: sourceAsset.equipmentType,
+        sourceAssetId: sourceAsset._id,
         assets: [{ asset: inTransitAsset._id, quantity: quantity }],
         totalQuantity: quantity,
         status: "INITIATED",
@@ -133,35 +132,31 @@ export const completeTransfer = asyncHandler(async (req, res) => {
 
 export const cancelTransfer = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    // ... (initial validations)
     const transfer = await Transfer.findById(id).populate("assets.asset");
+
     if (!transfer) {
-        return res
-            .status(404)
-            .json({ message: "Transfer not found", status: "error" });
+        return res.status(404).json({ message: "Transfer not found" });
     }
 
     if (transfer.status === "COMPLETED" || transfer.status === "CANCELLED") {
         return res.status(400).json({
             message: `Cannot cancel a ${transfer.status.toLowerCase()} transfer`,
-            status: "error",
         });
     }
 
     const inTransitAsset = transfer.assets[0].asset;
 
     if (inTransitAsset) {
-        const assetToReturnTo = await Asset.findOneAndUpdate(
-            {
-                currentBase: transfer.fromBase,
-                equipmentType: transfer.equipmentType,
-                status: "AVAILABLE",
-            },
-            {
-                $inc: { quantity: inTransitAsset.quantity },
-            },
-            { new: true, upsert: true }
-        );
+        const originalAsset = await Asset.findById(transfer.sourceAssetId);
+
+        if (originalAsset) {
+            originalAsset.quantity += inTransitAsset.quantity;
+
+            if (originalAsset.status === "IN_TRANSIT") {
+                originalAsset.status = "AVAILABLE";
+            }
+            await originalAsset.save();
+        }
 
         await Asset.findByIdAndDelete(inTransitAsset._id);
     }
@@ -170,7 +165,7 @@ export const cancelTransfer = asyncHandler(async (req, res) => {
         id,
         { status: "CANCELLED" },
         { new: true }
-    ).populate(/* ... */);
+    );
 
     res.locals.data = updatedTransfer;
     res.locals.model = "Transfer";

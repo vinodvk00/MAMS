@@ -12,6 +12,7 @@ import {
     adminOnly,
     logisticsOfficerOnly,
     baseComanderOnly,
+    officerOnly,
 } from "../middlewares/auth.middleware.js";
 import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
@@ -129,7 +130,7 @@ assetRouter.use(verifyJWT);
  */
 assetRouter.post(
     "/create",
-    baseComanderOnly,
+    officerOnly,
     logApiRequest("ASSET_CREATE"),
     createAsset
 );
@@ -393,7 +394,7 @@ assetRouter.get("/:id", baseComanderOnly, getAssetById);
  */
 assetRouter.patch(
     "/:id",
-    baseComanderOnly,
+    officerOnly,
     logApiRequest("ASSET_UPDATE"),
     updateAsset
 );

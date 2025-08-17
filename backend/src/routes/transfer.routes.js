@@ -14,6 +14,7 @@ import {
     adminOnly,
     logisticsOfficerOnly,
     baseComanderOnly,
+    officerOnly,
 } from "../middlewares/auth.middleware.js";
 import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
@@ -141,7 +142,7 @@ transferRouter.use(verifyJWT);
  */
 transferRouter.post(
     "/initiate",
-    baseComanderOnly,
+    officerOnly,
     logApiRequest("TRANSFER_INITIATE"),
     initiateTransfer
 );

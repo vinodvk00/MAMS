@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { transfersAPI, assetsAPI, basesAPI, equipmentTypesAPI } from "../services/api";
+import {
+    transfersAPI,
+    assetsAPI,
+    basesAPI,
+    equipmentTypesAPI,
+} from "../services/api";
 import { App } from "antd";
 import { useAuth } from "../context/AuthContext";
 
@@ -17,14 +22,23 @@ export const useTransfers = () => {
         setLoading(true);
         try {
             let transfersRes;
-            if (user.role === 'base_commander') {
+            if (user.role === "base_commander") {
                 transfersRes = await transfersAPI.getByBase();
             } else {
                 transfersRes = await transfersAPI.getAll();
             }
 
+            let assetsRequest;
+            if (user.role === "admin" || user.role === "logistics_officer") {
+                assetsRequest = assetsAPI.getAll();
+            } else if (user.role === "base_commander") {
+                assetsRequest = assetsAPI.getByBase();
+            } else {
+                assetsRequest = Promise.resolve({ data: [] });
+            }
+
             const [assetsRes, basesRes, equipmentTypesRes] = await Promise.all([
-                assetsAPI.getByBase(),
+                assetsRequest,
                 basesAPI.getAll(),
                 equipmentTypesAPI.getAll(),
             ]);
@@ -32,8 +46,11 @@ export const useTransfers = () => {
             setTransfers(transfersRes.data || []);
             setBases(basesRes.data || []);
             setEquipmentTypes(equipmentTypesRes.data || []);
-            setAvailableAssets(assetsRes.data.filter(asset => asset.status === 'AVAILABLE') || []);
-
+            setAvailableAssets(
+                assetsRes.data.filter(
+                    (asset) => asset.status === "AVAILABLE"
+                ) || []
+            );
         } catch (error) {
             messageApi.error(error.message || "Failed to fetch data");
         } finally {

@@ -1,4 +1,3 @@
-// frontend/src/pages/Purchases.jsx
 import { useState } from "react";
 import { Table, Button, Modal, Form, Space, Tag, App } from "antd";
 import {
@@ -28,7 +27,7 @@ const PurchasesContent = () => {
     const [viewingPurchase, setViewingPurchase] = useState(null);
     const [form] = Form.useForm();
     const { user } = useAuth();
-    const { message: messageApi } = App.useApp();
+    const { message: messageApi, modal: modalApi } = App.useApp();
 
     const canManagePurchases =
         user?.role === "admin" || user?.role === "logistics_officer";
@@ -78,7 +77,7 @@ const PurchasesContent = () => {
     };
 
     const handleDelete = async id => {
-        Modal.confirm({
+        modalApi.confirm({
             title: "Are you sure you want to delete this purchase?",
             content: "This action cannot be undone.",
             okText: "Yes, delete it",

@@ -56,7 +56,7 @@ const Layout = ({ children }) => {
             icon: <SwapOutlined />,
             label: "Transfers",
         },
-        {
+        (user?.role === "admin" || user?.role === "base_commander") && {
             key: "assignments",
             icon: <TeamOutlined />,
             label: "Assignments",
@@ -71,7 +71,7 @@ const Layout = ({ children }) => {
             icon: <SafetyOutlined />,
             label: "Bases",
         },
-        {
+        (user?.role === "admin" || user?.role === "base_commander") && {
             key: "expenditures",
             icon: <MinusCircleOutlined />,
             label: "Expenditures",

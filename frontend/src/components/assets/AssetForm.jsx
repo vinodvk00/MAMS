@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, InputNumber } from "antd";
 
 const { Option } = Select;
@@ -17,6 +17,7 @@ const AssetFormModal = ({
     updateAsset,
 }) => {
     const [form] = Form.useForm();
+    const [purchaseLocked, setPurchaseLocked] = useState(false);
 
     const isCommander = user?.role === "base_commander";
 
@@ -30,11 +31,32 @@ const AssetFormModal = ({
                     purchaseId:
                         editingAsset.purchaseId?._id || editingAsset.purchaseId,
                 });
+                if (editingAsset.purchaseId) {
+                    setPurchaseLocked(true);
+                }
             } else {
                 form.resetFields();
+                setPurchaseLocked(false);
             }
         }
     }, [visible, editingAsset, form]);
+
+    const handlePurchaseSelect = purchaseId => {
+        if (purchaseId) {
+            const selectedPurchase = purchases.find(p => p._id === purchaseId);
+            if (selectedPurchase) {
+                form.setFieldsValue({
+                    equipmentType: selectedPurchase.equipmentType?._id,
+                    currentBase: selectedPurchase.base?._id,
+                    quantity: selectedPurchase.quantity,
+                });
+                setPurchaseLocked(true);
+            }
+        } else {
+            form.resetFields(["equipmentType", "currentBase", "quantity"]);
+            setPurchaseLocked(false);
+        }
+    };
 
     const handleOk = async () => {
         try {
@@ -77,6 +99,27 @@ const AssetFormModal = ({
                     <Input />
                 </Form.Item>
                 <Form.Item
+                    name='purchaseId'
+                    label='Purchase Reference (Optional)'
+                >
+                    <Select
+                        placeholder='Link to a purchase record'
+                        allowClear
+                        loading={formLoading}
+                        showSearch
+                        optionFilterProp='children'
+                        onChange={handlePurchaseSelect}
+                    >
+                        {purchases.map(purchase => (
+                            <Option key={purchase._id} value={purchase._id}>
+                                {`ID: ${purchase._id.slice(-6)} - ${
+                                    purchase.equipmentType?.name
+                                } (Qty: ${purchase.quantity})`}
+                            </Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+                <Form.Item
                     name='equipmentType'
                     label='Equipment Type'
                     rules={[
@@ -91,6 +134,7 @@ const AssetFormModal = ({
                         loading={formLoading}
                         showSearch
                         optionFilterProp='children'
+                        disabled={purchaseLocked}
                     >
                         {equipmentTypes.map(type => (
                             <Option key={type._id} value={type._id}>
@@ -113,6 +157,7 @@ const AssetFormModal = ({
                             loading={formLoading}
                             showSearch
                             optionFilterProp='children'
+                            disabled={purchaseLocked}
                         >
                             {bases.map(base => (
                                 <Option key={base._id} value={base._id}>
@@ -122,27 +167,6 @@ const AssetFormModal = ({
                         </Select>
                     </Form.Item>
                 )}
-
-                <Form.Item
-                    name='purchaseId'
-                    label='Purchase Reference (Optional)'
-                >
-                    <Select
-                        placeholder='Link to a purchase record'
-                        allowClear
-                        loading={formLoading}
-                        showSearch
-                        optionFilterProp='children'
-                    >
-                        {purchases.map(purchase => (
-                            <Option key={purchase._id} value={purchase._id}>
-                                {`ID: ${purchase._id.slice(-6)} - ${
-                                    purchase.equipmentType?.name
-                                } (Qty: ${purchase.quantity})`}
-                            </Option>
-                        ))}
-                    </Select>
-                </Form.Item>
                 <Form.Item
                     name='quantity'
                     label='Quantity'
@@ -154,7 +178,11 @@ const AssetFormModal = ({
                         },
                     ]}
                 >
-                    <InputNumber min={0} style={{ width: "100%" }} />
+                    <InputNumber
+                        min={0}
+                        style={{ width: "100%" }}
+                        disabled={purchaseLocked}
+                    />
                 </Form.Item>
                 <Form.Item
                     name='status'

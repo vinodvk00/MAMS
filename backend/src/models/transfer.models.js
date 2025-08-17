@@ -17,6 +17,11 @@ const transferSchema = new mongoose.Schema(
             ref: "EquipmentType",
             required: true,
         },
+        sourceAssetId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Asset",
+            required: true,
+        },
         assets: [
             {
                 asset: {
@@ -68,6 +73,5 @@ const transferSchema = new mongoose.Schema(
 transferSchema.index({ fromBase: 1, transferDate: -1 });
 transferSchema.index({ toBase: 1, transferDate: -1 });
 transferSchema.index({ status: 1, transferDate: -1 });
-
 
 export const Transfer = mongoose.model("Transfer", transferSchema);

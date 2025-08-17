@@ -1,56 +1,39 @@
-import { useState, useEffect } from 'react';
-import { Table, Button, message, Tag, Space, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { assetsAPI } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import AssetFormModal from '../components/assets/AssetForm';
+import { useState } from "react";
+import { Table, Button, Tag, Space, Popconfirm } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useAuth } from "../context/AuthContext";
+import { useAssets } from "../hooks/useAssets.hook";
+import AssetFormModal from "../components/assets/AssetForm";
 
 const Assets = () => {
-    const [assets, setAssets] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const {
+        assets,
+        loading,
+        deleteAsset,
+        addAsset,
+        updateAsset,
+        bases,
+        equipmentTypes,
+        purchases,
+        formLoading,
+    } = useAssets();
+
+    const { user } = useAuth();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingAsset, setEditingAsset] = useState(null);
-    const { user } = useAuth();
-
-    const fetchAssets = async () => {
-        setLoading(true);
-        try {
-            const response = await assetsAPI.getAll();
-            setAssets(response.data);
-        } catch (error) {
-            message.error('Failed to fetch assets');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchAssets();
-    }, []);
 
     const handleAdd = () => {
         setEditingAsset(null);
         setIsModalVisible(true);
     };
 
-    const handleEdit = (record) => {
+    const handleEdit = record => {
         setEditingAsset(record);
         setIsModalVisible(true);
     };
 
-    const handleDelete = async (id) => {
-        try {
-            await assetsAPI.delete(id);
-            message.success('Asset deleted successfully');
-            fetchAssets();
-        } catch (error) {
-            message.error('Failed to delete asset');
-        }
-    };
-
     const handleModalOk = () => {
         setIsModalVisible(false);
-        fetchAssets();
     };
 
     const handleModalCancel = () => {
@@ -59,80 +42,86 @@ const Assets = () => {
 
     const columns = [
         {
-            title: 'Serial Number',
-            dataIndex: 'serialNumber',
-            key: 'serialNumber',
+            title: "Serial Number",
+            dataIndex: "serialNumber",
+            key: "serialNumber",
             sorter: (a, b) => a.serialNumber.localeCompare(b.serialNumber),
         },
         {
-            title: 'Equipment Type',
-            dataIndex: ['equipmentType', 'name'],
-            key: 'equipmentType',
-            sorter: (a, b) => a.equipmentType.name.localeCompare(b.equipmentType.name),
-        }, {
-            title: 'Quantity',
-            dataIndex: 'quantity',
-            key: 'quantity',
-            sorter: (a, b) => a.quantity.localeCompare(b.quantity),
+            title: "Equipment Type",
+            dataIndex: ["equipmentType", "name"],
+            key: "equipmentType",
+            sorter: (a, b) =>
+                a.equipmentType.name.localeCompare(b.equipmentType.name),
         },
         {
-            title: 'Base',
-            dataIndex: ['currentBase', 'name'],
-            key: 'base',
-            sorter: (a, b) => a.currentBase.name.localeCompare(b.currentBase.name),
+            title: "Quantity",
+            dataIndex: "quantity",
+            key: "quantity",
+            sorter: (a, b) => a.quantity - b.quantity,
         },
         {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => {
+            title: "Base",
+            dataIndex: ["currentBase", "name"],
+            key: "base",
+            sorter: (a, b) =>
+                a.currentBase.name.localeCompare(b.currentBase.name),
+        },
+        {
+            title: "Status",
+            dataIndex: "status",
+            key: "status",
+            render: status => {
                 let color;
                 switch (status) {
-                    case 'AVAILABLE':
-                        color = 'green';
+                    case "AVAILABLE":
+                        color = "green";
                         break;
-                    case 'ASSIGNED':
-                        color = 'blue';
+                    case "ASSIGNED":
+                        color = "blue";
                         break;
-                    case 'IN_TRANSIT':
-                        color = 'orange';
+                    case "IN_TRANSIT":
+                        color = "orange";
                         break;
-                    case 'MAINTENANCE':
-                        color = 'gold';
+                    case "MAINTENANCE":
+                        color = "gold";
                         break;
-                    case 'EXPENDED':
-                        color = 'red';
+                    case "EXPENDED":
+                        color = "red";
                         break;
                     default:
-                        color = 'default';
+                        color = "default";
                 }
                 return <Tag color={color}>{status}</Tag>;
             },
         },
         {
-            title: 'Condition',
-            dataIndex: 'condition',
-            key: 'condition',
+            title: "Condition",
+            dataIndex: "condition",
+            key: "condition",
         },
         {
-            title: 'Date Added',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (date) => new Date(date).toLocaleDateString(),
+            title: "Date Added",
+            dataIndex: "createdAt",
+            key: "createdAt",
+            render: date => new Date(date).toLocaleDateString(),
             sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
         },
         {
-            title: 'Actions',
-            key: 'actions',
+            title: "Actions",
+            key: "actions",
             render: (_, record) => (
                 <Space>
-                    <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-                    {user.role === 'admin' && (
+                    <Button
+                        icon={<EditOutlined />}
+                        onClick={() => handleEdit(record)}
+                    />
+                    {user.role === "admin" && (
                         <Popconfirm
-                            title="Are you sure you want to delete this asset?"
-                            onConfirm={() => handleDelete(record._id)}
-                            okText="Yes"
-                            cancelText="No"
+                            title='Are you sure you want to delete this asset?'
+                            onConfirm={() => deleteAsset(record._id)}
+                            okText='Yes'
+                            cancelText='No'
                         >
                             <Button icon={<DeleteOutlined />} danger />
                         </Popconfirm>
@@ -144,9 +133,19 @@ const Assets = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 16,
+                }}
+            >
                 <h1>Assets</h1>
-                <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                <Button
+                    type='primary'
+                    icon={<PlusOutlined />}
+                    onClick={handleAdd}
+                >
                     Add Asset
                 </Button>
             </div>
@@ -154,7 +153,7 @@ const Assets = () => {
                 columns={columns}
                 dataSource={assets}
                 loading={loading}
-                rowKey="_id"
+                rowKey='_id'
                 scroll={{ x: true }}
             />
             <AssetFormModal
@@ -162,6 +161,13 @@ const Assets = () => {
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
                 editingAsset={editingAsset}
+                bases={bases}
+                equipmentTypes={equipmentTypes}
+                purchases={purchases}
+                formLoading={formLoading}
+                user={user}
+                addAsset={addAsset}
+                updateAsset={updateAsset}
             />
         </div>
     );

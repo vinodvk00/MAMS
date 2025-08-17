@@ -7,6 +7,7 @@
 
 import { Base } from "../models/base.models.js";
 import mongoose from "mongoose";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const createBase = async (req, res) => {
     try {
@@ -180,3 +181,26 @@ export const deleteBase = async (req, res) => {
         });
     }
 };
+
+export const getBasesByCommander = asyncHandler(async (req, res) => {
+    const { commanderId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(commanderId)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid commander ID format",
+        });
+    }
+
+    const bases = await Base.find({ commander: commanderId }).populate(
+        "commander",
+        "username fullname"
+    );
+    console.log("commander id:", commanderId);
+    console.log("Bases for Commander:", bases);
+
+    return res.status(200).json({
+        success: true,
+        message: "Bases retrieved successfully",
+        data: bases,
+    });
+});

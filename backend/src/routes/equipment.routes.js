@@ -6,7 +6,7 @@ import {
     getEquipmentTypeById,
     updateEquipmentType,
 } from "../controllers/equipmentType.controller.js";
-import { adminOnly, verifyJWT } from "../middlewares/auth.middleware.js";
+import { adminOnly, baseComanderOnly, verifyJWT } from "../middlewares/auth.middleware.js";
 import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const equipmentRouter = new Router();
@@ -317,7 +317,7 @@ equipmentRouter.patch(
  *       403:
  *         $ref: '#/components/responses/ForbiddenError'
  */
-equipmentRouter.get("/getAll", verifyJWT, adminOnly, getAllEquipmentTypes);
+equipmentRouter.get("/getAll", verifyJWT, baseComanderOnly, getAllEquipmentTypes);
 
 /**
  * @swagger

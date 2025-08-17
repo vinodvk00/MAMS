@@ -5,13 +5,25 @@ import {
     getBaseById,
     updateBase,
     deleteBase,
+    getBasesByCommander,
 } from "../controllers/base.controller.js";
-import { adminOnly, verifyJWT } from "../middlewares/auth.middleware.js";
+import {
+    adminOnly,
+    baseComanderOnly,
+    verifyJWT,
+} from "../middlewares/auth.middleware.js";
 import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const baseRouter = Router();
 
 baseRouter.use(verifyJWT);
+
+baseRouter.get(
+    "/commander/:commanderId",
+    baseComanderOnly,
+    getBasesByCommander
+);
+
 baseRouter.use(adminOnly);
 
 /**

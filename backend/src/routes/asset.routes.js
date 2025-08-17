@@ -129,7 +129,7 @@ assetRouter.use(verifyJWT);
  */
 assetRouter.post(
     "/create",
-    logisticsOfficerOnly,
+    baseComanderOnly,
     logApiRequest("ASSET_CREATE"),
     createAsset
 );

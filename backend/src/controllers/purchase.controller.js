@@ -194,3 +194,25 @@ export const getPurchaseById = asyncHandler(async (req, res) => {
         data: purchase,
     });
 });
+
+export const getPurchasesByBase = asyncHandler(async (req, res) => {
+    const userBaseId = req.user.assignedBase;
+
+    if (!userBaseId) {
+        return res.status(400).json({
+            message: "User has no assigned base",
+            status: "error",
+        });
+    }
+
+    const purchases = await Purchase.find({ base: userBaseId })
+        .populate("base", "name code location")
+        .populate("equipmentType", "name category code")
+        .sort({ purchaseDate: -1 });
+
+    return res.status(200).json({
+        message: "Base purchases retrieved successfully",
+        status: "success",
+        data: purchases,
+    });
+});

@@ -5,16 +5,21 @@ import {
     deletePurchase,
     getAllPurchases,
     getPurchaseById,
+    getPurchasesByBase,
 } from "../controllers/purchase.controller.js";
 import {
     verifyJWT,
     logisticsOfficerOnly,
+    baseComanderOnly,
 } from "../middlewares/auth.middleware.js";
 import { logApiRequest } from "../middlewares/apiLog.middleware.js";
 
 const purchaseRouter = Router();
 
 purchaseRouter.use(verifyJWT);
+
+purchaseRouter.get("/base", baseComanderOnly, getPurchasesByBase);
+
 purchaseRouter.use(logisticsOfficerOnly);
 
 /**

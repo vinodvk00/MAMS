@@ -89,7 +89,7 @@ Follow these instructions to set up and run the project locally.
 
 The REST API is self-documented using **Swagger/OpenAPI**. Once the backend server is running, you can access the interactive API documentation at:
 
-* [**api-docs**](https://mams-oekz.onrender.com/)
+* [**api-docs**](https://mams-oekz.onrender.com/api-docs/)
 
 ### **Full Project Documentation**
 

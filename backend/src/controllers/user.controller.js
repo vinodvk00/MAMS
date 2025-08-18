@@ -114,13 +114,21 @@ export const deleteUser = asyncHandler(async (req, res) => {
             .json({ message: "Invalid user ID", status: "error" });
     }
 
-    const user = await User.findByIdAndDelete(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
         return res
             .status(404)
             .json({ message: "User not found", status: "error" });
     }
+
+    if (user.role === "admin") {
+        return res
+            .status(403)
+            .json({ message: "Admins cannot be deleted.", status: "error" });
+    }
+
+    await User.findByIdAndDelete(userId);
 
     res.status(200).json({
         message: "User deleted successfully",

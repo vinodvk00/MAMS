@@ -1,8 +1,18 @@
 import axios from "axios";
 
+const getBaseURL = () => {
+    if (import.meta.env.PROD) {
+        return (
+            import.meta.env.VITE_API_BASE_URL ||
+            "https://temp.com/api/v1"
+        );
+    }
+    return "http://localhost:3000/api/v1";
+};
+
 const api = axios.create({
-    baseURL: "http://localhost:3000/api/v1",
-    timeout: 10000,
+    baseURL: getBaseURL(),
+    // timeout: 10000,
     headers: {
         "Content-Type": "application/json",
     },
